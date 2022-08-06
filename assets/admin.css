@@ -1,0 +1,6 @@
+#hizzle-downloads-table .column-menu_order,
+#hizzle-downloads-table .column-download_expiry,
+#hizzle-downloads-table .column-download_count,
+#hizzle-downloads-table .column-download_limit {
+  width: 150px;
+}

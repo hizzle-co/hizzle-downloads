@@ -1,0 +1,26 @@
+{
+    "name": "hizzle/downloads",
+    "type": "library",
+    "description": "Download manager plugin.",
+    "keywords": ["wordpress","hizzle","payment"],
+    "homepage": "http://hizzle.co/pay/",
+    "license": "GPL-3.0+",
+    "authors": [
+        {
+            "name": "Brian Mutende",
+            "email": "picocodes@gmail.com",
+            "homepage": "http://github.com/picocodes/",
+            "role": "Developer"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0",
+        "hizzle/store": "^0.0.2",
+        "hizzle/logger": "^0.0.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "Hizzle\\Downloads\\": "src/"
+        }
+    }
+}

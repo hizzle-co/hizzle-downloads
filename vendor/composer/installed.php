@@ -1,0 +1,41 @@
+<?php return array(
+    'root' => array(
+        'pretty_version' => 'dev-main',
+        'version' => 'dev-main',
+        'type' => 'library',
+        'install_path' => __DIR__ . '/../../',
+        'aliases' => array(),
+        'reference' => 'f000260925b563bfe8280b2582a0baf65f35ee63',
+        'name' => 'hizzle/downloads',
+        'dev' => true,
+    ),
+    'versions' => array(
+        'hizzle/downloads' => array(
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../../',
+            'aliases' => array(),
+            'reference' => 'f000260925b563bfe8280b2582a0baf65f35ee63',
+            'dev_requirement' => false,
+        ),
+        'hizzle/logger' => array(
+            'pretty_version' => '0.0.1',
+            'version' => '0.0.1.0',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../hizzle/logger',
+            'aliases' => array(),
+            'reference' => 'd40c4d66e1db9492c2cccf2d9793d5a724b05a83',
+            'dev_requirement' => false,
+        ),
+        'hizzle/store' => array(
+            'pretty_version' => '0.0.2',
+            'version' => '0.0.2.0',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../hizzle/store',
+            'aliases' => array(),
+            'reference' => '3e79428a644db1130e210c0df724562b4a4a0787',
+            'dev_requirement' => false,
+        ),
+    ),
+);
