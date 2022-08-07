@@ -103,24 +103,24 @@ class Admin {
 		$version = defined( 'SCRIPT_DEBUG' ) && SCRIPT_DEBUG ? time() : HIZZLE_DOWNLOADS_VERSION;
 		$prefix  = sanitize_title( __( 'Hizzle Downloads', 'hizzle-downloads' ) );
 
-		if ( $screen && in_array( $screen->id, hpay_get_screen_ids(), true ) ) {
+		if ( $screen && false !== strpos( $screen->id, $prefix ) ) {
 
 			// Load admin CSS && JS.
-			wp_enqueue_style( 'hizzle-downloads-admin', hizzle_downloads()->plugin_url() . '/assets/css/admin.css', array(), $version );
-			wp_enqueue_style( 'select2', hizzle_downloads()->plugin_url() . '/assets/vendor/select2/select2.min.css', array(), '4.1.0' );
-
-			wp_enqueue_script( 'postbox' );
-			wp_enqueue_script( 'select2', hpay()->plugin_url() . '/assets/vendor/select2/select2.min.js', array( 'jquery' ), '4.1.0', true );
+			wp_enqueue_style( 'hizzle-downloads-admin', hizzle_downloads()->plugin_url() . '/assets/admin.css', array(), $version );
+			wp_enqueue_style( 'select2', hizzle_downloads()->plugin_url() . '/assets/select2.min.css', array(), '4.1.0' );
+			wp_enqueue_script( 'select2', hizzle_downloads()->plugin_url() . '/assets/select2.min.js', array( 'jquery' ), '4.1.0', true );
 
 			// Dowload editing scripts.
-			if ( $prefix . '_page_hpay-downloads' === $screen->id ) {
+			if ( isset( $_GET['hizzle_download'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				wp_enqueue_media();
-				wp_enqueue_script( 'hpay-edit-download', hpay()->plugin_url() . '/assets/js/edit-download.js', array( 'jquery' ), $version, true );
+				wp_enqueue_script( 'postbox' );
+				wp_enqueue_script( 'vue', hizzle_downloads()->plugin_url() . '/assets/vue.js', array(), '3.2.37', true );
+				wp_enqueue_script( 'hpay-edit-download', hizzle_downloads()->plugin_url() . '/assets/edit-download.js', array( 'jquery', 'vue' ), $version, true );
 			}
 
 			// Settings.
-			if ( $prefix . '_page_hpay-settings' === $screen->id ) {
-				wp_enqueue_script( 'hpay-settings', hpay()->plugin_url() . '/assets/js/settings.js', array( 'jquery' ), $version, true );
+			if ( $prefix . '_page_hizzle-download-settings' === $screen->id ) {
+				wp_enqueue_script( 'hpay-settings', hizzle_downloads()->plugin_url() . '/assets/settings.js', array( 'jquery' ), $version, true );
 			}
 		}
 

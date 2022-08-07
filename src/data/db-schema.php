@@ -72,12 +72,13 @@ return array(
 		),
 	),
 
-	// Store the links between downloadable files and products / orders.
-	'links' => array(
-		'singular_name' => 'link',
+	// Store download logs.
+	'logs'  => array(
+		'singular_name' => 'log',
+		'object'        => '\Hizzle\Downloads\Download_Log',
 		'props'         => array(
 
-			'id'          => array(
+			'id'              => array(
 				'type'        => 'BIGINT',
 				'length'      => 20,
 				'nullable'    => false,
@@ -85,38 +86,39 @@ return array(
 				'description' => __( 'Unique identifier for this resource.', 'hizzle-downloads' ),
 			),
 
-			'file_id'     => array(
+			'timestamp'       => array(
+				'type'        => 'DATETIME',
+				'description' => __( 'The download date.', 'hizzle-downloads' ),
+				'nullable'    => false,
+			),
+
+			'file_id'         => array(
 				'type'        => 'BIGINT',
 				'length'      => 20,
 				'nullable'    => false,
 				'description' => __( 'The file ID.', 'hizzle-downloads' ),
 			),
 
-			'external_id' => array(
-				'type'        => 'VARCHAR',
+			'user_id'         => array(
+				'type'        => 'BIGINT',
 				'length'      => 20,
-				'nullable'    => false,
-				'description' => __( 'The external id or slug.', 'hizzle-downloads' ),
+				'nullable'    => true,
+				'description' => __( 'The user ID.', 'hizzle-downloads' ),
 			),
 
-			'source'      => array(
+			'user_ip_address' => array(
 				'type'        => 'VARCHAR',
-				'length'      => 20,
-				'nullable'    => false,
-				'description' => __( 'The source, e.g wp_user or product id.', 'hizzle-downloads' ),
-			),
-
-			'metadata'    => array(
-				'type'        => 'TEXT',
-				'description' => __( 'A key value array of additional metadata about the download permission', 'hizzle-downloads' ),
+				'length'      => 100,
+				'nullable'    => true,
+				'description' => __( 'The ip address that made the download.', 'hizzle-downloads' ),
 			),
 
 		),
 
 		'keys'          => array(
-			'primary'  => array( 'id' ),
-			'file_id'  => array( 'file_id' ),
-			'external' => array( 'external_id', 'source' ),
+			'primary'   => array( 'id' ),
+			'file_id'   => array( 'file_id' ),
+			'timestamp' => array( 'timestamp' ),
 		),
 	),
 

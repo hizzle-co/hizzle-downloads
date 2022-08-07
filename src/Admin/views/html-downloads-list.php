@@ -12,17 +12,17 @@
 
 ?>
 
-<div class="wrap hpay-downloads-page" id="hpay-wrapper">
+<div class="wrap hizzle-downloads-page" id="hizzle-downloads-wrapper">
 
 	<h1 class="wp-heading-inline">
-		<span><?php esc_html_e( 'Downloads', 'hizzle-pay' ); ?></span>
-		<a href="<?php echo esc_url( add_query_arg( 'hpay_download', '0', admin_url( 'admin.php?page=hpay-downloads' ) ) ); ?>" class="page-title-action"><?php esc_html_e( 'Add New', 'hizzle-pay' ); ?></a>
+		<span><?php esc_html_e( 'Downloads', 'hizzle-downloads' ); ?></span>
+		<a href="<?php echo esc_url( add_query_arg( 'hizzle_download', '0', admin_url( 'admin.php?page=hizzle-downloads' ) ) ); ?>" class="page-title-action"><?php esc_html_e( 'Add New', 'hizzle-downloads' ); ?></a>
 	</h1>
 
 	<?php Notices::output_custom_notices(); ?>
 
-	<form id="hpay-downloads-table" method="GET">
-		<?php $downloads_table->search_box( __( 'Search Downloads', 'hizzle-pay' ), 'search' ); ?>
+	<form id="hizzle-downloads-table" method="GET">
+		<?php $downloads_table->search_box( __( 'Search Downloads', 'hizzle-downloads' ), 'search' ); ?>
 		<?php $downloads_table->display(); ?>
 	</form>
 

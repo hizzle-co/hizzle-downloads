@@ -33,8 +33,8 @@ class Menus {
 	public function admin_menu() {
 
 		add_menu_page(
-			__( 'Download Files', 'hizzle-downloads' ),
-			__( 'Download Files', 'hizzle-downloads' ),
+			__( 'Hizzle Downloads', 'hizzle-downloads' ),
+			__( 'Hizzle Downloads', 'hizzle-downloads' ),
 			'manage_options',
 			'hizzle-downloads',
 			null,

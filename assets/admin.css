@@ -1,6 +1,62 @@
 #hizzle-downloads-table .column-menu_order,
-#hizzle-downloads-table .column-download_expiry,
-#hizzle-downloads-table .column-download_count,
-#hizzle-downloads-table .column-download_limit {
-  width: 150px;
+#hizzle-downloads-table .column-category,
+#hizzle-downloads-table .column-download_count {
+    width: 150px;
+}
+
+#hizzle-downloads-table .column-file_name {
+    width: 200px;
+}
+
+.hizzle-downloads-form-field:first-child {
+	margin-top: 16px;
+}
+
+.hizzle-downloads-form-field {
+	margin-bottom: 16px;
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+}
+
+.hizzle-downloads-form-field-label {
+	flex: 0 0 150px;
+	font-weight: 500;
+	margin-right: 10px;
+}
+
+.hizzle-downloads-form-field-input {
+	flex: 1 1 auto;
+}
+
+.hizzle-downloads-conditional-logic-wrapper {
+	padding: 10px;
+    border-radius: 4px;
+}
+
+.hizzle-downloads-conditional-logic-rule select,
+.hizzle-downloads-conditional-logic-rule input {
+	margin-right: 10px;
+}
+
+.hizzle-downloads-conditional-logic-rule .hizzle-logic-rule-input-lg {
+	width: 150px;
+}
+
+.hizzle-downloads-conditional-logic-rule .hizzle-logic-rule-input-sm {
+	width: 50px;
+}
+
+.hizzle-downloads-remove-rule {
+	color: #454545;
+    text-decoration: none;
+}
+
+.hizzle-downloads-remove-rule .dashicons{
+	vertical-align: middle;
+    font-size: 16px;
+}
+
+#hizzle-edit-download {
+	margin-top: 20px;
 }

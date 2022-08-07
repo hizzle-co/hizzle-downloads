@@ -1,3 +1,5 @@
+"use strict";
+
 jQuery( document ).ready( function( $ ) {
 
     var downloadable_file_frame;
@@ -6,7 +8,7 @@ jQuery( document ).ready( function( $ ) {
 	$( document.body ).on( 'click', '.hizzle-upload-downloadable-file', function( event ) {
 		var $el = $( this );
 
-		file_path_field = $( '#hizzle-file_url' );
+		file_path_field = $( '#hizzle-file-url' );
 
 		event.preventDefault();
 
@@ -66,5 +68,45 @@ jQuery( document ).ready( function( $ ) {
 		// Finally, open the modal.
 		downloadable_file_frame.open();
 	});
+
+	// Conditional logic editing app.
+	Vue
+		.createApp({
+			data: function() {
+				return $( '#hizzle-downloads-edit-conditional-logic-app' ).data( 'conditional-logic' );
+			},
+			methods: {
+
+				// Checks if there are rule options.
+				hasRuleOptions: function( rule_type ) {
+					return this.allRules[ rule_type ] !== undefined && this.allRules[ rule_type ].options !== undefined;
+				},
+
+				// Retrieves the rule options.
+				getRuleOptions: function( rule_type ) {
+					return this.allRules[ rule_type ].options;
+				},
+
+				// Adds a new rule.
+				addRule: function() {
+					this.rules.push({
+						type: 'user_role',
+						condition: 'is',
+						value: 'administrator'
+					});
+				},
+
+				// Removes an existing rule.
+				removeRule: function( rule ) {
+					this.rules.splice( this.rules.indexOf( rule ), 1 );
+				},
+
+				// Checks if a rule is the last one.
+				isLastRule: function( index ) {
+					return index === this.rules.length - 1;
+				}
+			}
+		})
+		.mount('#hizzle-downloads-edit-conditional-logic-app')
 
 })

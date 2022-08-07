@@ -58,6 +58,13 @@ class Plugin {
 	public $logger;
 
 	/**
+	 * Download handler.
+	 *
+	 * @var Download_Handler
+	 */
+	public $handler;
+
+	/**
 	 * Stores the main plugin instance.
 	 *
 	 * @access      private
@@ -138,6 +145,9 @@ class Plugin {
 
 		// Logger.
 		$this->logger = apply_filters( 'hizzle_downloads_logger', \Hizzle\Logger\Logger::get_instance() );
+
+		// Download handler.
+		$this->handler = new Download_Handler();
 
 		// Maybe install.
 		Installer::init();

@@ -29,7 +29,7 @@ class Downloads {
 		add_action( 'hizzle_downloads_admin_save_download', array( $this, 'save_download' ) );
 
 		// Display downloads.
-		add_action( 'hizzle_downloads_admin_display_downloads', array( $this, 'display_downloads' ) );
+		add_action( 'hizzle_admin_display_downloads', array( $this, 'display_downloads' ) );
 
 		// Uploads.
 		add_filter( 'upload_dir', array( $this, 'upload_dir' ) );
@@ -48,7 +48,7 @@ class Downloads {
 		// Either display a list of downloads or the download edit screen.
 		if ( isset( $_GET['hizzle_download'] ) ) {
 			$download_id = absint( $_GET['hizzle_download'] );
-			$download    = hizzle_downloads_get_download( $download_id );
+			$download    = hizzle_get_download( $download_id );
 			$this->edit_download( $download );
 		} else {
 			$this->list_downloads();
@@ -99,7 +99,7 @@ class Downloads {
 		}
 
 		// Does the download exist.
-		$download = hizzle_downloads_get_download( $data['hizzle_download_id'] );
+		$download = hizzle_get_download( $data['hizzle_download_id'] );
 
 		if ( is_wp_error( $download ) ) {
 			Notices::add_custom_notice( $download->get_error_code(), $download->get_error_message() );
@@ -107,7 +107,18 @@ class Downloads {
 		}
 
 		// Update the download.
-		$download->set_props( wp_kses_post_deep( $data['hizzle'] ) );
+		$props = isset( $data['hizzle_downloads'] ) ? $data['hizzle_downloads'] : array();
+		$download->set_props(
+			array(
+				'file_name'  => isset( $props['file_name'] ) ? $props['file_name'] : null,
+				'file_url'   => isset( $props['file_url'] ) ? $props['file_url'] : null,
+				'category'   => isset( $props['category'] ) ? $props['category'] : null,
+				'menu_order' => isset( $props['menu_order'] ) ? $props['menu_order'] : null,
+			)
+		);
+
+		// Conditional logic.
+		$download->update_meta( '_conditional_logic', isset( $props['conditional_logic'] ) ? $props['conditional_logic'] : array() );
 
 		// Save the download file.
 		$result = $download->save();
@@ -120,10 +131,6 @@ class Downloads {
 		// Add notice.
 		if ( $download->exists() ) {
 
-			// TODO: Update download links.
-			$links_to_update = apply_filters( 'hizzle_downloads_links_to_update', array(), $download );
-
-			hizzle_update_download_links( $download->get_id(), $links_to_update );
 			Notices::add_custom_notice( 'changes_saved', __( 'Download saved successfully.', 'hizzle-downloads' ) );
 			wp_safe_redirect( esc_url_raw( $download->get_edit_url() ) );
 			exit;
