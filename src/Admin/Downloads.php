@@ -94,7 +94,7 @@ class Downloads {
 		// Nonce and capability were checked in Admin::maybe_do_action();
 
 		// Abort if no download file.
-		if ( ! isset( $data['hizzle_download_id'] ) || empty( $data['hizzle'] ) ) {
+		if ( ! isset( $data['hizzle_download_id'] ) || empty( $data['hizzle_downloads'] ) ) {
 			return;
 		}
 

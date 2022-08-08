@@ -193,14 +193,20 @@ class Download extends Record {
 		$conditional_logic = $this->get_meta( '_conditional_logic' );
 
 		if ( ! is_array( $conditional_logic ) ) {
-			$conditional_logic = array(
+			$conditional_logic = array();
+		}
+
+		$conditional_logic = wp_parse_args(
+			$conditional_logic,
+			array(
 				'enabled' => false,
 				'action'  => 'allow',
 				'type'    => 'all',
 				'rules'   => array(),
-			);
-		}
+			)
+		);
 
+		$conditional_logic['enabled'] = (bool) $conditional_logic['enabled'];
 		return $conditional_logic;
 	}
 

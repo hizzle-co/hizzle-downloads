@@ -21,6 +21,16 @@
 
 	<?php Notices::output_custom_notices(); ?>
 
+	<p class="description">
+		<?php
+			printf(
+				// translators: %s is a shortcode.
+				esc_html__( 'Use the %s shortcode to display available downloads on the frontend.', 'hizzle-downloads' ),
+				'<code>[hizzle-downloads]</code>'
+			);
+		?>
+	</p>
+
 	<form id="hizzle-downloads-table" method="GET">
 		<?php $downloads_table->search_box( __( 'Search Downloads', 'hizzle-downloads' ), 'search' ); ?>
 		<?php $downloads_table->display(); ?>

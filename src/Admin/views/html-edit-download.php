@@ -82,15 +82,15 @@
 
                     <p>
                         <select name="hizzle_downloads[conditional_logic][action]" v-model="action">
-                            <option value="allow"><?php esc_html_e( 'Allow', 'hizzle-downloads' ); ?></option>
+                            <option value="allow"><?php esc_html_e( 'Only allow', 'hizzle-downloads' ); ?></option>
                             <option value="prevent"><?php esc_html_e( 'Prevent', 'hizzle-downloads' ); ?></option>
                         </select>
 
                         <span>&nbsp;<?php esc_html_e( 'downloads if', 'hizzle-downloads' ); ?>&nbsp;</span>
 
                         <select name="hizzle_downloads[conditional_logic][type]" v-model="type">
-                            <option value="all"><?php esc_html_e( 'All', 'hizzle-downloads' ); ?></option>
-                            <option value="any"><?php esc_html_e( 'Any', 'hizzle-downloads' ); ?></option>
+                            <option value="all"><?php esc_html_e( 'all', 'hizzle-downloads' ); ?></option>
+                            <option value="any"><?php esc_html_e( 'any', 'hizzle-downloads' ); ?></option>
                         </select>
 
                         <span>&nbsp;<?php esc_html_e( 'of the following rules are true:', 'hizzle-downloads' ); ?>&nbsp;</span>
@@ -124,7 +124,7 @@
                     <p>
                         <button class="button" @click.prevent="addRule">
                             <span class="dashicons dashicons-plus" style="vertical-align: middle;"></span>
-                            <span v-if="rules.length"><?php esc_html_e( 'Add another rule', 'hizzle-downloads' ); ?></span>
+                            <span v-if="rules"><?php esc_html_e( 'Add another rule', 'hizzle-downloads' ); ?></span>
                             <span v-else><?php esc_html_e( 'Add rule', 'hizzle-downloads' ); ?></span>
                         </button>
                     </p>
