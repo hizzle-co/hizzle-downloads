@@ -115,12 +115,12 @@ class Admin {
 				wp_enqueue_media();
 				wp_enqueue_script( 'postbox' );
 				wp_enqueue_script( 'vue', hizzle_downloads()->plugin_url() . '/assets/vue.js', array(), '3.2.37', true );
-				wp_enqueue_script( 'hpay-edit-download', hizzle_downloads()->plugin_url() . '/assets/edit-download.js', array( 'jquery', 'vue' ), $version, true );
+				wp_enqueue_script( 'hizzle-edit-download', hizzle_downloads()->plugin_url() . '/assets/edit-download.js', array( 'jquery', 'vue' ), $version, true );
 			}
 
 			// Settings.
 			if ( $prefix . '_page_hizzle-download-settings' === $screen->id ) {
-				wp_enqueue_script( 'hpay-settings', hizzle_downloads()->plugin_url() . '/assets/settings.js', array( 'jquery' ), $version, true );
+				wp_enqueue_script( 'hizzle-settings', hizzle_downloads()->plugin_url() . '/assets/settings.js', array( 'jquery' ), $version, true );
 			}
 		}
 

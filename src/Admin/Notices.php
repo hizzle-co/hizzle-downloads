@@ -108,7 +108,7 @@ class Notices {
 	 * @param $name Notice name.
 	 */
 	public static function get_notice_hide_url( $name, $base_url = false ) {
-		return Admin::action_url( 'hide_notice', add_query_arg( 'hpay_notice', rawurlencode( $name ), $base_url ) );
+		return Admin::action_url( 'hide_notice', add_query_arg( 'hizzle_download_notice', rawurlencode( $name ), $base_url ) );
 	}
 
 	/**
@@ -117,9 +117,9 @@ class Notices {
 	 * @param array $args
 	 */
 	public static function admin_hide_notice( $args ) {
-		if ( isset( $args['hpay_notice'] ) ) {
-			self::hide_notice( sanitize_text_field( $args['hpay_notice'] ) );
-			wp_safe_redirect( remove_query_arg( array( 'hpay_notice', 'hpay_admin_action', 'hpay_nonce' ) ) );
+		if ( isset( $args['hizzle_download_notice'] ) ) {
+			self::hide_notice( sanitize_text_field( $args['hizzle_download_notice'] ) );
+			wp_safe_redirect( remove_query_arg( array( 'hizzle_download_notice', 'hizzle_download_admin_action', 'hizzle_download_nonce' ) ) );
 			exit;
 		}
 	}
@@ -132,9 +132,9 @@ class Notices {
 	public static function hide_notice( $name ) {
 		self::remove_notice( $name );
 
-		update_user_meta( get_current_user_id(), 'hpay_dismissed_' . $name . '_notice', true );
+		update_user_meta( get_current_user_id(), 'hizzle_download_dismissed_' . $name . '_notice', true );
 
-		do_action( 'hpay_hide_' . $name . '_notice' );
+		do_action( 'hizzle_download_hide_' . $name . '_notice' );
 	}
 
 	/**
@@ -143,7 +143,7 @@ class Notices {
 	 * @param $name Notice name.
 	 */
 	public static function is_notice_hidden( $name ) {
-		return (bool) hpay_sanitize_boolean( get_user_meta( get_current_user_id(), 'hpay_dismissed_' . $name . '_notice', true ) );
+		return (bool) get_user_meta( get_current_user_id(), 'hizzle_download_dismissed_' . $name . '_notice', true );
 	}
 
 	/**
@@ -153,18 +153,6 @@ class Notices {
 		$notices = self::get_notices();
 
 		if ( empty( $notices ) ) {
-			return;
-		}
-
-		$screen          = get_current_screen();
-		$screen_id       = $screen ? $screen->id : '';
-		$show_on_screens = array(
-			'dashboard',
-			'plugins',
-		);
-
-		// Notices should only show on our screens, the main dashboard, and on the plugins screen.
-		if ( ! in_array( $screen_id, hpay_get_screen_ids(), true ) && ! in_array( $screen_id, $show_on_screens, true ) ) {
 			return;
 		}
 
@@ -200,7 +188,7 @@ class Notices {
 			);
 		}
 
-		update_option( 'hpay_admin_notice_' . $name, wp_kses_post_deep( $notice ) );
+		update_option( 'hizzle_download_admin_notice_' . $name, wp_kses_post_deep( $notice ) );
 	}
 
 	/**
@@ -217,7 +205,7 @@ class Notices {
 			}
 
 			// Fetch notice data.
-			$notice_data = get_option( 'hpay_admin_notice_' . $notice );
+			$notice_data = get_option( 'hizzle_download_admin_notice_' . $notice );
 
 			if ( is_array( $notice_data ) ) {
 				include dirname( __FILE__ ) . '/views/html-notice-custom.php';

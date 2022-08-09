@@ -109,6 +109,23 @@ class Download extends Record {
 	}
 
 	/**
+	 * Retrieves the downloaded file name.
+	 *
+	 * @return string
+	 */
+	public function get_downloaded_file_name() {
+		$filename = basename( $this->get_file_url() );
+
+		if ( strstr( $filename, '?' ) ) {
+			$filename = current( explode( '?', $filename ) );
+		}
+
+		$filename = apply_filters( 'hizzle_downloaded_file_name', $filename, $this );
+
+		return empty( $filename ) ? $this->get_file_name() : $filename;
+	}
+
+	/**
 	 * Get the file URL.
 	 *
 	 * @param string $context What the value is for. Valid values are 'view' and 'edit'.
@@ -221,6 +238,44 @@ class Download extends Record {
 	}
 
 	/**
+	 * Checks if the conditional logic is met.
+	 *
+	 * @return bool
+	 */
+	public function is_conditional_logic_met() {
+
+		// Abort if conditional logic is not enabled.
+		if ( ! $this->has_conditional_logic() ) {
+			return true;
+		}
+
+		// Retrieve the conditional logic.
+		$conditional_logic = $this->get_conditional_logic();
+		$action            = $conditional_logic['action'];
+		$rules_met         = 0;
+		$rules_total       = count( $conditional_logic['rules'] );
+
+		foreach ( $conditional_logic['rules'] as $rule ) {
+			$is_rule_met = apply_filters( 'hizzle_download_conditional_logic_rule_met_' . $rule['type'], false, $rule, $this );
+			$should_meet = 'is' === $rule['condition'];
+
+			if ( $is_rule_met === $should_meet ) {
+				$rules_met ++;
+			}
+		}
+
+		// Check if the conditions are met.
+		if ( 'all' === $conditional_logic['type'] ) {
+			$is_condition_met = $rules_met === $rules_total;
+		} else {
+			$is_condition_met = $rules_met > 0;
+		}
+
+		// Return the result.
+		return 'allow' === $action ? $is_condition_met : ! $is_condition_met;
+	}
+
+	/**
 	 * Checks if the file is downloadable.
 	 *
 	 * @return bool
@@ -229,6 +284,21 @@ class Download extends Record {
 		$file_url        = $this->get_file_url();
 		$is_downloadable = ( ! empty( $file_url ) && $this->exists() );
 		return apply_filters( 'hizzle_downloads_is_downloadable', $is_downloadable, $this );
+	}
+
+	/**
+	 * Checks if the current user can download the file.
+	 *
+	 * @return bool
+	 */
+	public function current_user_can_download() {
+
+		// Abort if the file is not downloadable.
+		if ( ! $this->is_downloadable() ) {
+			return false;
+		}
+
+		return apply_filters( 'hizzle_downloads_current_user_can_download', $this->is_conditional_logic_met(), $this );
 	}
 
 	/**
@@ -302,6 +372,10 @@ class Download extends Record {
 		$download_log->set_user_id( $user_id );
 		$download_log->set_user_ip_address( $user_ip_address );
 		$download_log->save();
+
+		// Update download count.
+		$this->set_download_count( $this->get_download_count() + 1 );
+		$this->save();
 	}
 
 }

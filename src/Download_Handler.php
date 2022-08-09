@@ -15,13 +15,13 @@ defined( 'ABSPATH' ) || exit;
  */
 class Download_Handler {
 
-    /**
+	/**
 	 * Class constructor.
 	 */
 	public function __construct() {
 
 		if ( isset( $_GET['hizzle_download_file'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			add_action( 'init', array( $this, 'download_file' ) );
+			add_action( 'wp_loaded', array( $this, 'download_file' ) );
 		}
 
 		add_action( 'hizzle_download_file_redirect', array( $this, 'download_file_redirect' ) );
@@ -29,68 +29,69 @@ class Download_Handler {
 		add_action( 'hizzle_download_file_force', array( $this, 'download_file_force' ) );
 	}
 
-    /**
-     * Downloads a file.
-     */
-    public function download_file() {
-        $file_id = rawurldecode( $_GET['hizzle_download_file'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+	/**
+	 * Downloads a file.
+	 */
+	public function download_file() {
+		$file_id = rawurldecode( $_GET['hizzle_download_file'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 
-        // Either retrieve the file via an ID or a name.
-        if ( is_numeric( $file_id ) ) {
-            $file = hizzle_get_download( absint( $file_id ) );
-        } else {
-            $file = hizzle_get_download_by_file_name( sanitize_text_field( $file_id ) );
-        }
+		// Either retrieve the file via an ID or a name.
+		if ( is_numeric( $file_id ) ) {
+			$file = hizzle_get_download( absint( $file_id ) );
+		} else {
+			$file = hizzle_get_download_by_file_name( sanitize_text_field( $file_id ) );
+		}
 
-        // Abort if the file doesn't exist.
-        if ( is_wp_error( $file ) ) {
-            return $this->download_error( $file );
-        }
+		// Abort if the file doesn't exist.
+		if ( is_wp_error( $file ) ) {
+			return $this->download_error( $file );
+		}
 
-        // Abort if the file is not downloadable.
-        if ( ! $file->is_downloadable() ) {
-            return $this->download_error( new \WP_Error( 'hizzle_downloads_file_not_downloadable', __( 'This file is not downloadable.', 'hizzle-downloads' ) ) );
-        }
+		// Abort if the file is not downloadable.
+		if ( ! $file->is_downloadable() ) {
+			return $this->download_error( new \WP_Error( 'hizzle_downloads_file_not_downloadable', __( 'This file is not downloadable.', 'hizzle-downloads' ) ) );
+		}
 
-        // Check if the current user can download the file.
-        if ( ! apply_filters( 'hizzle_current_user_can_download_file', false, $file ) ) {
-            return $this->download_error( new \WP_Error( 'hizzle_downloads_user_cannot_download', __( 'You do not have permission to download this file.', 'hizzle-downloads' ) ) );
-        }
+		// Check if the current user can download the file.
+		if ( ! $file->current_user_can_download() ) {
+			return $this->download_error( new \WP_Error( 'hizzle_downloads_user_cannot_download', __( 'You do not have permission to download this file.', 'hizzle-downloads' ) ) );
+		}
 
-        // Download the file.
-        try {
-            $parsed_file_path = $file->parse_file_path();
-		    $download_range   = self::get_download_range( @filesize( $parsed_file_path['file_path'] ) );  // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+		// Download the file.
+		$parsed_file_path = $file->parse_file_path();
 
-            // Track the download.
-            if ( ! $download_range['is_range_request'] ) {
-                $current_user_id = get_current_user_id();
-                $ip_address      = hizzle_downloads_get_ip_address();
+		try {
+			$download_range   = self::get_download_range( @filesize( $parsed_file_path['file_path'] ) );  // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 
-                $file->track_download( $current_user_id > 0 ? $current_user_id : null, ! empty( $ip_address ) ? $ip_address : null );
-            }
+			// Track the download.
+			if ( ! $download_range['is_range_request'] ) {
+				$current_user_id = get_current_user_id();
+				$ip_address      = hizzle_downloads_get_ip_address();
 
-            // Handle the download.
-            do_action( 'hizzle_download_file_' . hizzle_download_method(), $file );
-        } catch ( \Exception $e ) {
-            $this->log( $e->getMessage(), 'error', $file->get_data() );
-            $this->download_error( new \WP_Error( 'hizzle_downloads_error', $e->getMessage() ) );
-        }
+				$file->track_download( $current_user_id > 0 ? $current_user_id : null, ! empty( $ip_address ) ? $ip_address : null );
+			}
 
-        exit;
-    }
+			// Handle the download.
+			do_action( 'hizzle_download_file_' . hizzle_download_method(), $file );
+		} catch ( \Exception $e ) {
+			$this->log( $e->getMessage(), 'error', $parsed_file_path );
+			$this->download_error( new \WP_Error( 'hizzle_downloads_error', $e->getMessage() ) );
+		}
 
-    /**
+		exit;
+	}
+
+	/**
 	 * Redirect to a file to start the download.
 	 *
 	 * @param Download $file The file to download.
-     */
+	 */
 	public function download_file_redirect( $file ) {
 		header( 'Location: ' . $file->get_file_url() );
 		exit;
 	}
 
-    /**
+	/**
 	 * Download a file using X-Sendfile, X-Lighttpd-Sendfile, or X-Accel-Redirect if available.
 	 *
 	 * @param Download $file The file to download.
@@ -109,17 +110,17 @@ class Download_Handler {
 		}
 
 		if ( function_exists( 'apache_get_modules' ) && in_array( 'mod_xsendfile', apache_get_modules(), true ) ) {
-			self::download_headers( $parsed_file_path['file_path'], $file->get_file_name() );
+			self::download_headers( $parsed_file_path['file_path'], $file->get_downloaded_file_name() );
 			$filepath = apply_filters( 'hizzle_download_file_xsendfile_file_path', $parsed_file_path['file_path'], $file, $parsed_file_path );
 			header( 'X-Sendfile: ' . $filepath );
 			exit;
 		} elseif ( stristr( getenv( 'SERVER_SOFTWARE' ), 'lighttpd' ) ) {
-			self::download_headers( $parsed_file_path['file_path'], $file->get_file_name() );
+			self::download_headers( $parsed_file_path['file_path'], $file->get_downloaded_file_name() );
 			$filepath = apply_filters( 'hizzle_download_file_xsendfile_lighttpd_file_path', $parsed_file_path['file_path'], $file, $parsed_file_path );
 			header( 'X-Lighttpd-Sendfile: ' . $filepath );
 			exit;
 		} elseif ( stristr( getenv( 'SERVER_SOFTWARE' ), 'nginx' ) || stristr( getenv( 'SERVER_SOFTWARE' ), 'cherokee' ) ) {
-			self::download_headers( $parsed_file_path['file_path'], $file->get_file_name() );
+			self::download_headers( $parsed_file_path['file_path'], $file->get_downloaded_file_name() );
 			$xsendfile_path = trim( preg_replace( '`^' . str_replace( '\\', '/', getcwd() ) . '`', '', $parsed_file_path['file_path'] ), '/' );
 			$xsendfile_path = apply_filters( 'hizzle_download_file_xsendfile_x_accel_redirect_file_path', $xsendfile_path, $file, $parsed_file_path );
 			header( "X-Accel-Redirect: /$xsendfile_path" );
@@ -132,19 +133,19 @@ class Download_Handler {
 				/* translators: %1$s contains the filepath of the digital asset. */
 				__( '%1$s could not be served using the X-Accel-Redirect/X-Sendfile method. A Force Download will be used instead.', 'hizzle-downloads' ),
 				$file->get_file_name()
-            ),
-            'warning',
-            $file->get_data()
+			),
+			'warning',
+			$parsed_file_path
 		);
 
-        // Do not use X-sendfile for future downloads.
-        update_option( 'hizzle_downloads_xsendfile_missing', 1 );
+		// Do not use X-sendfile for future downloads.
+		update_option( 'hizzle_downloads_xsendfile_missing', 1 );
 
-        // Force download.
+		// Force download.
 		do_action( 'hizzle_download_file_force', $file );
 	}
 
-    /**
+	/**
 	 * Force download - this is the default method.
 	 *
 	 * @param Download $file The file to download.
@@ -153,7 +154,7 @@ class Download_Handler {
 		$parsed_file_path = $file->parse_file_path();
 		$download_range   = self::get_download_range( @filesize( $parsed_file_path['file_path'] ) ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 
-		self::download_headers( $parsed_file_path['file_path'], $file->get_file_name(), $download_range );
+		self::download_headers( $parsed_file_path['file_path'], $file->get_downloaded_file_name(), $download_range );
 
 		$start  = isset( $download_range['start'] ) ? $download_range['start'] : 0;
 		$length = isset( $download_range['length'] ) ? $download_range['length'] : 0;
@@ -164,11 +165,11 @@ class Download_Handler {
 						/* translators: %1$s contains the filepath of the digital asset. */
 						__( '%1$s could not be served using the Force Download method. A redirect will be used instead.', 'hizzle-downloads' ),
 						$file->get_file_name()
-                    ),
-                    'warning',
-                    $file->get_data()
+					),
+					'warning',
+					$parsed_file_path
 				);
-                do_action( 'hizzle_download_file_redirect', $file );
+				do_action( 'hizzle_download_file_redirect', $file );
 			} else {
 				self::download_error( __( 'File not found', 'hizzle-downloads' ) );
 			}
@@ -177,7 +178,7 @@ class Download_Handler {
 		exit;
 	}
 
-    /**
+	/**
 	 * Parse the HTTP_RANGE request from iOS devices.
 	 * Does not support multi-range requests.
 	 *
@@ -254,7 +255,7 @@ class Download_Handler {
 		return $download_range;
 	}
 
-    /**
+	/**
 	 * Set headers for the download.
 	 *
 	 * @param string $file_path      File path.
@@ -297,7 +298,7 @@ class Download_Handler {
 		}
 	}
 
-    /**
+	/**
 	 * Check and set certain server config variables to ensure downloads work as intended.
 	 */
 	private function check_server_config() {
@@ -325,19 +326,19 @@ class Download_Handler {
 		}
 	}
 
-    /**
-     * Wrapper for set_time_limit to see if it is enabled.
-     *
-     * @since 1.0.0
-     * @param int $limit Time limit.
-     */
-    private function set_time_limit( $limit = 0 ) {
-        if ( function_exists( 'set_time_limit' ) && false === strpos( ini_get( 'disable_functions' ), 'set_time_limit' ) && ! ini_get( 'safe_mode' ) ) { // phpcs:ignore PHPCompatibility.IniDirectives.RemovedIniDirectives.safe_modeDeprecatedRemoved
-            @set_time_limit( $limit ); // @codingStandardsIgnoreLine
-        }
-    }
+	/**
+	 * Wrapper for set_time_limit to see if it is enabled.
+	 *
+	 * @since 1.0.0
+	 * @param int $limit Time limit.
+	 */
+	private function set_time_limit( $limit = 0 ) {
+		if ( function_exists( 'set_time_limit' ) && false === strpos( ini_get( 'disable_functions' ), 'set_time_limit' ) && ! ini_get( 'safe_mode' ) ) { // phpcs:ignore PHPCompatibility.IniDirectives.RemovedIniDirectives.safe_modeDeprecatedRemoved
+			@set_time_limit( $limit ); // @codingStandardsIgnoreLine
+		}
+	}
 
-    /**
+	/**
 	 * Get content type of a download.
 	 *
 	 * @param  string $file_path File path.
@@ -358,7 +359,7 @@ class Download_Handler {
 		return $ctype;
 	}
 
-    /**
+	/**
 	 * Read file chunked.
 	 *
 	 * Reads file in chunks so big downloads are possible without changing PHP.INI - http://codeigniter.com/wiki/Download_helper_for_large_files/.
@@ -418,11 +419,11 @@ class Download_Handler {
 		return @fclose( $handle ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged, WordPress.WP.AlternativeFunctions.file_system_read_fclose
 	}
 
-    /**
+	/**
 	 * Die with an error message if the download fails.
 	 *
 	 * @param \WP_Error $error The error to display.
-     */
+	 */
 	private function download_error( $error ) {
 
 		/*
@@ -438,23 +439,23 @@ class Download_Handler {
 			header_remove( 'Content-Transfer-Encoding' );
 		}
 
-		wp_die( $error ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		wp_die( $error, 400 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 
-    /**
-     * Logs an error message.
-     *
-     * @param string $message The error message to log.
-     * @param string $type    The type of error.
-     * @param array  $data    Optional. Data to log in the error message.
-     */
-    private function log( $message, $type = 'error', $data = array() ) {
-        $context = array_merge(
-            array( 'source' => 'hizzle_download_file' ),
-            $data
-        );
+	/**
+	 * Logs an error message.
+	 *
+	 * @param string $message The error message to log.
+	 * @param string $type    The type of error.
+	 * @param array  $data    Optional. Data to log in the error message.
+	 */
+	private function log( $message, $type = 'error', $data = array() ) {
+		$context = array_merge(
+			array( 'source' => 'hizzle_download_file' ),
+			$data
+		);
 
-        hizzle_downloads()->logger->log( $type, $message, $context );
-    }
+		hizzle_downloads()->logger->log( $type, $message, $context );
+	}
 
 }

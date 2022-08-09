@@ -117,6 +117,7 @@ class Plugin {
 
 		add_action( 'plugins_loaded', array( $this, 'on_plugins_loaded' ), -1 );
 		add_action( 'init', array( $this, 'init' ), 0 );
+		add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue_gutenberg_assets' ) );
 
 	}
 
@@ -166,9 +167,86 @@ class Plugin {
 		// Set up localisation.
 		$this->load_plugin_textdomain();
 
+		// Register block.
+		$this->register_block_type();
+
+		// Register shortcode.
+		add_shortcode( 'hizzle-downloads', array( $this, 'shortcode' ) );
+
 		// Init action.
 		do_action( 'hizzle_downloads_init' );
 
+	}
+
+	/**
+	 * Register the available downloads block type.
+	 */
+	public function register_block_type() {
+
+		// Bail if register_block_type does not exist (available since WP 5.0)
+		if ( ! function_exists( 'register_block_type' ) ) {
+			return;
+		}
+
+		// Fire pre-registration hook.
+		do_action( 'before_register_hizzle_downloads_block_type', $this );
+
+		// Register the block type.
+		register_block_type(
+			'hizzle/downloads',
+			array(
+				'render_callback' => array( $this, 'shortcode' ),
+			)
+		);
+
+		// Fire post-registration hook.
+		do_action( 'after_register_hizzle_downloads_block_type', $this );
+
+	}
+
+	/**
+	 * Load gutenberg files
+	 *
+	 */
+	public function enqueue_gutenberg_assets() {
+
+		wp_enqueue_style( 'noptin_front' );
+
+		wp_enqueue_script(
+			'hizzle-downloads-block',
+			$this->plugin_url() . '/assets/block.js',
+			array( 'wp-blocks', 'wp-element' ),
+			filemtime( noptin()->plugin_path . 'includes/assets/js/dist/blocks-new.js' ),
+			true
+		);
+
+		$locale = array(
+			'blockName'        => __( 'Hizzle > Available Downloads', 'hizzle-downloads' ),
+			'blockDescription' => __( 'Displays a list of available downloads for the current user', 'hizzle-downloads' ),
+			'placeholderText'  => __( 'Available downloads will appear here', 'hizzle-downloads' ),
+		);
+
+		wp_localize_script( 'hizzle-downloads-block', 'hizzleDownloads', $locale );
+	}
+
+	/**
+	 * Generates the available downloads shortcode.
+	 *
+	 * @param array $attributes
+	 * @param string $content
+	 * @return string
+	 */
+	public function shortcode( $atts = array(), $content = '' ) {
+		$downloads = hizzle_get_available_downloads();
+		$html      = apply_filters( 'hizzle_downloads_shortcode_html', null, $downloads, $atts, $content );
+
+		if ( ! is_null( $html ) ) {
+			return $html;
+		}
+
+		ob_start();
+		hizzle_downloads_display_downloads( $downloads, $atts );
+		return ob_get_clean();
 	}
 
 	/**
