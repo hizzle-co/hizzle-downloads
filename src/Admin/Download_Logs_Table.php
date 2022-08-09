@@ -2,7 +2,7 @@
 
 namespace Hizzle\Downloads\Admin;
 
-use \Hizzle\Downloads\Download;
+use \Hizzle\Downloads\Download_Log;
 
 /**
  * Displays a list of all downloads.
@@ -15,9 +15,9 @@ if ( ! class_exists( 'WP_List_Table' ) ) {
 }
 
 /**
- * Downloads table class.
+ * Download logs table class.
  */
-class Downloads_Table extends \WP_List_Table {
+class Download_Logs_Table extends \WP_List_Table {
 
 	/**
 	 * Query
@@ -28,7 +28,7 @@ class Downloads_Table extends \WP_List_Table {
 	public $query;
 
 	/**
-	 * Total downloads
+	 * Total logs
 	 *
 	 * @var   int
 	 * @since 1.0.0
@@ -41,7 +41,7 @@ class Downloads_Table extends \WP_List_Table {
 	 * @var   int
 	 * @since 1.0.0
 	 */
-	public $per_page = 20;
+	public $per_page = 25;
 
 	/**
 	 *  Constructor function.
@@ -55,7 +55,7 @@ class Downloads_Table extends \WP_List_Table {
 			)
 		);
 
-		$this->per_page = $this->get_items_per_page( 'hizzle_downloads_per_page', 20 );
+		$this->per_page = $this->get_items_per_page( 'hizzle_download_logs_per_page', 25 );
 
 		$this->process_bulk_action();
 
@@ -84,14 +84,14 @@ class Downloads_Table extends \WP_List_Table {
 		if ( 'delete' === $action ) {
 
 			foreach ( $_POST['id'] as $id ) {
-				hizzle_delete_download( $id );
+				hizzle_delete_download_log( (int) $id );
 			}
 
-			Notices::add_custom_notice( 'deleted_downloads', __( 'The selected downloads have been deleted.', 'hizzle-downloads' ) );
+			Notices::add_custom_notice( 'deleted_download_logs', __( 'The selected download logs have been deleted.', 'hizzle-downloads' ) );
 
 		}
 
-		do_action( 'hizzle_downloads_process_bulk_action', $action, $this );
+		do_action( 'hizzle_download_logs_process_bulk_action', $action, $this );
 	}
 
 	/**
@@ -99,11 +99,11 @@ class Downloads_Table extends \WP_List_Table {
 	 */
 	public function prepare_query() {
 
-		$this->query = hizzle_get_downloads(
+		$this->query = hizzle_get_download_logs(
 			array(
 				'paged'   => $this->get_pagenum(),
 				'number'  => $this->per_page,
-				'orderby' => isset( $_GET['orderby'] ) ? sanitize_text_field( $_GET['orderby'] ) : 'id', // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				'orderby' => isset( $_GET['orderby'] ) ? sanitize_text_field( $_GET['orderby'] ) : 'timestamp', // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				'order'   => isset( $_GET['order'] ) ? sanitize_text_field( $_GET['order'] ) : 'DESC', // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				'search'  => isset( $_GET['s'] ) ? sanitize_text_field( $_GET['s'] ) : '', // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			),
@@ -118,45 +118,18 @@ class Downloads_Table extends \WP_List_Table {
 	/**
 	 * Displays a column.
 	 *
-	 * @param Download $item        item.
+	 * @param Download_Log $item        item.
 	 * @param string $column_name column name.
 	 */
 	public function column_default( $item, $column_name ) {
-
-		switch ( $column_name ) {
-
-			case 'file_name':
-				return sprintf(
-					'<div class="download-row-name-wrapper"><div class="row-title"><a href="%s"><strong>%s</strong></a></div><div class="row-actions">%s</div></div>',
-					esc_url( $item->get_edit_url() ),
-					esc_html( $item->get_file_name() ),
-					$this->get_download_row_actions( $item )
-				);
-
-			case 'file_url':
-				return esc_url( $item->get_file_url() );
-
-			case 'download_count':
-				return (int) $item->get_download_count();
-
-			case 'menu_order':
-				return (int) $item->get_menu_order();
-
-			case 'category':
-				$category = $item->get_category();
-				return empty( $category ) ? '&mdash;' : esc_html( $category );
-
-		}
-
 		// Allow plugins to display custom columns.
 		do_action( "hizzle_display_downloads_table_$column_name", $item );
-
 	}
 
 	/**
 	 * Returns available row actions.
 	 *
-	 * @param Download $item item.
+	 * @param Download_Log $item item.
 	 * @return string
 	 */
 	public function get_download_row_actions( $item ) {
@@ -169,24 +142,78 @@ class Downloads_Table extends \WP_List_Table {
 				absint( $item->get_id() )
 			),
 
-			'edit'   => sprintf(
-				'<a href="%s">%s</a>',
-				esc_url( $item->get_edit_url() ),
-				esc_html__( 'Edit', 'hizzle-downloads' )
-			),
-
-			'delete' => sprintf(
-				'<a href="%s" onclick="return confirm(%s)">%s</a>',
-				esc_url( $item->get_delete_url() ),
-				// translators: File name.
-				esc_attr( sprintf( __( 'Are you sure you want to delete %s?', 'hizzle-downloads' ), $item->get_file_name() ) ),
-				esc_html__( 'Delete', 'hizzle-downloads' )
-			),
-
 		);
 
-		return $this->row_actions( apply_filters( 'hizzle_download_row_actions', $actions, $item ) );
+		return $this->row_actions( apply_filters( 'hizzle_download_log_row_actions', $actions, $item ) );
 
+	}
+
+	/**
+	 * Displays the user_id column.
+	 *
+	 * @param  Download_Log $item item.
+	 * @return string
+	 */
+	public function column_user_id( $item ) {
+		$user = get_user_by( 'id', $item->get_user_id() );
+
+		if ( empty( $user ) ) {
+			return '&mdash;';
+		}
+
+		// Return a link to the user's profile.
+		return sprintf(
+			'<a href="%s" target="_blank">%s</a>',
+			esc_url( get_edit_user_link( $user->ID ) ),
+			esc_html( $user->display_name . '(' . $user->user_login . ')' )
+		);
+	}
+
+	/**
+	 * Displays the timestamp column.
+	 *
+	 * @param  Download_Log $item item.
+	 * @return string
+	 */
+	public function column_timestamp( $item ) {
+		$date = $item->get_timestamp();
+		$date = empty( $date ) ? '&mdash;' : $date->date_i18n( 'F j, Y @ g:i a' );
+		return sprintf(
+			'<div class="download-log-row-timestamp-wrapper"><div class="row-title"><strong>%s</strong></div><div class="row-actions">%s</div></div>',
+			esc_html( $date ),
+			$this->get_download_row_actions( $item )
+		);
+	}
+
+	/**
+	 * Displays the user_ip_address column.
+	 *
+	 * @param  Download_Log $item item.
+	 * @return string
+	 */
+	public function column_user_ip_address( $item ) {
+		return esc_html( $item->get_user_ip_address() );
+	}
+
+	/**
+	 * Displays the file_id column.
+	 *
+	 * @param  Download_Log $item item.
+	 * @return string
+	 */
+	public function column_file_id( $item ) {
+		$file = hizzle_get_download( $item->get_file_id() );
+
+		if ( is_wp_error( $file ) || ! $file->exists() ) {
+			return '&mdash;';
+		}
+
+		// Return a link to the file's edit page.
+		return sprintf(
+			'<a href="%s" target="_blank">%s</a>',
+			esc_url( $file->get_edit_url() ),
+			esc_html( $file->get_file_name() )
+		);
 	}
 
 	/**
@@ -211,11 +238,11 @@ class Downloads_Table extends \WP_List_Table {
 		);
 
 		/**
-		 * Filters the bulk table actions shown on the downloads table.
+		 * Filters the bulk table actions shown on the download logs table.
 		 *
 		 * @param array $actions An array of bulk actions.
 		 */
-		return apply_filters( 'manage_hizzle_downloads_table_bulk_actions', $actions );
+		return apply_filters( 'manage_hizzle_download_logs_table_bulk_actions', $actions );
 
 	}
 
@@ -256,12 +283,11 @@ class Downloads_Table extends \WP_List_Table {
 	 */
 	public function get_columns() {
 		$columns = array(
-			'cb'             => '<input type="checkbox" />',
-			'file_name'      => __( 'File Name', 'hizzle-downloads' ),
-			'file_url'       => __( 'File URL', 'hizzle-downloads' ),
-			'category'       => __( 'Category', 'hizzle-downloads' ),
-			'download_count' => __( 'Download Count', 'hizzle-downloads' ),
-			'menu_order'     => __( 'Priority', 'hizzle-downloads' ),
+			'cb'              => '<input type="checkbox" />',
+			'timestamp'       => __( 'Timestamp', 'hizzle-downloads' ),
+			'file_id'         => __( 'File', 'hizzle-downloads' ),
+			'user_id'         => __( 'User', 'hizzle-downloads' ),
+			'user_ip_address' => __( 'User IP Address', 'hizzle-downloads' ),
 		);
 
 		/**
@@ -269,7 +295,7 @@ class Downloads_Table extends \WP_List_Table {
 		 *
 		 * @param array $columns Downloads table columns.
 		 */
-		return apply_filters( 'manage_hizzle_downloads_table_columns', $columns );
+		return apply_filters( 'manage_hizzle_download_logs_table_columns', $columns );
 	}
 
 	/**
@@ -279,19 +305,18 @@ class Downloads_Table extends \WP_List_Table {
 	 */
 	public function get_sortable_columns() {
 		$sortable = array(
-			'file_name'      => array( 'file_name', true ),
-			'file_url'       => array( 'file_url', true ),
-			'download_count' => array( 'download_count', true ),
-			'menu_order'     => array( 'menu_order', true ),
-			'category'       => array( 'category', true ),
+			'timestamp'       => array( 'timestamp', true ),
+			'file_id'         => array( 'file_id', false ),
+			'user_id'         => array( 'user_id', false ),
+			'user_ip_address' => array( 'user_ip_address', false ),
 		);
 
 		/**
-		 * Filters the sortable columns in the downloads table.
+		 * Filters the sortable columns in the download logs table.
 		 *
 		 * @param array $sortable An array of sortable columns.
 		 */
-		return apply_filters( 'manage_hizzle_downloads_sortable_table_columns', $sortable );
+		return apply_filters( 'manage_hizzle_download_logs_sortable_table_columns', $sortable );
 	}
 
 }

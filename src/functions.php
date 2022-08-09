@@ -302,6 +302,22 @@ function hizzle_get_download_log( $log_id = 0 ) {
 }
 
 /**
+ * Deletes a download log.
+ *
+ * @param int|string|Download_Log $download_log Download log id or object.
+ * @return bool|WP_Error True if deleted, error object if not.
+ */
+function hizzle_delete_download_log( $download_log ) {
+	$log = hizzle_get_download_log( $download_log );
+
+	if ( ! is_wp_error( $log ) ) {
+		return $log->delete();
+	}
+
+	return $log;
+}
+
+/**
  * Get current user IP Address.
  *
  * @return string

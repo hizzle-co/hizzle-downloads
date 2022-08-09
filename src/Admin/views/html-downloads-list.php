@@ -15,7 +15,7 @@
 <div class="wrap hizzle-downloads-page" id="hizzle-downloads-wrapper">
 
 	<h1 class="wp-heading-inline">
-		<span><?php esc_html_e( 'Downloads', 'hizzle-downloads' ); ?></span>
+		<span><?php esc_html_e( 'Downloadable Files', 'hizzle-downloads' ); ?></span>
 		<a href="<?php echo esc_url( add_query_arg( 'hizzle_download', '0', admin_url( 'admin.php?page=hizzle-downloads' ) ) ); ?>" class="page-title-action"><?php esc_html_e( 'Add New', 'hizzle-downloads' ); ?></a>
 	</h1>
 
@@ -25,7 +25,7 @@
 		<?php
 			printf(
 				// translators: %s is a shortcode.
-				esc_html__( 'Use the %s shortcode to display available downloads on the frontend.', 'hizzle-downloads' ),
+				esc_html__( 'Use the %s shortcode to display all downloads that the current user has access to.', 'hizzle-downloads' ),
 				'<code>[hizzle-downloads]</code>'
 			);
 		?>

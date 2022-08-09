@@ -51,7 +51,7 @@ class Menus {
 		add_submenu_page(
 			'hizzle-downloads',
 			__( 'Hizzle Pay Downloads', 'hizzle-downloads' ),
-			__( 'Downloads', 'hizzle-downloads' ),
+			__( 'Files', 'hizzle-downloads' ),
 			'manage_options',
 			'hizzle-downloads',
 			array( $this, 'downloads_page' )
@@ -71,19 +71,20 @@ class Menus {
 	public function settings_menu() {
 		add_submenu_page(
 			'hizzle-downloads',
-			__( 'Hizzle Pay Settings', 'hizzle-downloads' ),
-			__( 'Settings', 'hizzle-downloads' ),
+			__( 'Hizzle download logs', 'hizzle-downloads' ),
+			__( 'Logs', 'hizzle-downloads' ),
 			'manage_options',
-			'hizzle-download-settings',
-			array( $this, 'settings_page' )
+			'hizzle-download-logs',
+			array( $this, 'logs_page' )
 		);
 	}
 
 	/**
-	 * Displays the settings page.
+	 * Displays the download logs page.
 	 */
-	public function settings_page() {
-		do_action( 'hizzle_downloads_admin_display_settings' );
+	public function logs_page() {
+		// Display the list of downloads.
+		require_once dirname( __FILE__ ) . '/views/html-download-logs.php';
 	}
 
 	/**
