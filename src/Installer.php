@@ -22,7 +22,6 @@ class Installer {
 	public static function init() {
 		add_action( 'init', array( __CLASS__, 'check_version' ), 5 );
 		add_action( 'hizzle_downloads_verify_db_tables', array( __CLASS__, 'admin_verify_base_tables' ) );
-		add_filter( 'plugin_action_links_' . plugin_basename( HIZZLE_DOWNLOADS_PLUGIN_FILE ), array( __CLASS__, 'plugin_action_links' ) );
 		add_filter( 'wpmu_drop_tables', array( __CLASS__, 'wpmu_drop_tables' ) );
 	}
 
@@ -277,21 +276,6 @@ class Installer {
 			}
 		}
 
-	}
-
-	/**
-	 * Show action links on the plugin screen.
-	 *
-	 * @param mixed $links Plugin Action links.
-	 *
-	 * @return array
-	 */
-	public static function plugin_action_links( $links ) {
-		$action_links = array(
-			'settings' => '<a href="' . admin_url( 'admin.php?page=hizzle-download-settings' ) . '">' . esc_html__( 'Settings', 'hizzle-downloads' ) . '</a>',
-		);
-
-		return array_merge( $action_links, $links );
 	}
 
 }
