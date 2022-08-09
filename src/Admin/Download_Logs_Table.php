@@ -136,7 +136,7 @@ class Download_Logs_Table extends \WP_List_Table {
 
 		$actions = array(
 
-			'id'     => sprintf(
+			'id' => sprintf(
 				// translators: Download ID.
 				esc_html__( 'ID: %d', 'hizzle-downloads' ),
 				absint( $item->get_id() )

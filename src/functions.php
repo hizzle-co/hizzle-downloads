@@ -217,6 +217,7 @@ function hizzle_get_available_downloads() {
 		foreach ( $downloads as $download ) {
 			if ( $download->current_user_can_download() ) {
 				$grouped[ $download->get_category() ] = isset( $grouped[ $download->get_category() ] ) ? $grouped[ $download->get_category() ] : array();
+
 				$grouped[ $download->get_category() ][ $download->get_id() ] = $download;
 			}
 		}
