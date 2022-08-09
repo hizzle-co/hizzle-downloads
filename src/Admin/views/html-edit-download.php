@@ -26,6 +26,18 @@
         <?php endif; ?>
     </h1>
 
+    <?php if ( $download->exists() ) : ?>
+        <p class="description">
+            <?php
+                printf(
+                    // translators: %s is a shortcode.
+                    esc_html__( 'Use the %s shortcode to display a download link on the frontend.', 'hizzle-downloads' ),
+                    '<code>[hizzle-download id="' . (int) $download->get_id() . '"]Download[/hizzle-download]</code>'
+                );
+            ?>
+        </p>
+    <?php endif; ?>
+
     <form id="hizzle-edit-download" method="POST">
         <?php Admin::action_field( 'save_download' ); ?>
         <input type="hidden" name="hizzle_download_id" value="<?php echo esc_attr( $download->get_id() ); ?>" />

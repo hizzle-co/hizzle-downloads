@@ -172,6 +172,7 @@ class Plugin {
 
 		// Register shortcode.
 		add_shortcode( 'hizzle-downloads', array( $this, 'shortcode' ) );
+		add_shortcode( 'hizzle-download', array( $this, 'download_link_shortcode' ) );
 
 		// Init action.
 		do_action( 'hizzle_downloads_init' );
@@ -247,6 +248,40 @@ class Plugin {
 		ob_start();
 		hizzle_downloads_display_downloads( $downloads, $atts );
 		return ob_get_clean();
+	}
+
+	/**
+	 * Generates the download link shortcode.
+	 *
+	 * @param array $attributes
+	 * @param string $content
+	 * @return string
+	 */
+	public function download_link_shortcode( $attributes = array(), $content = '' ) {
+		$download_id = isset( $attributes['id'] ) ? $attributes['id'] : null;
+		$download    = hizzle_get_download( $download_id );
+
+		// Abort if the current user can't download the file.
+		if ( is_wp_error( $download ) || ! $download->exists() || ! $download->current_user_can_download() ) {
+			return '';
+		}
+
+		$atts = array(
+			'id'     => 'hizzle-download-link-' . $download->get_id() . '-' . wp_unique_id(),
+			'target' => isset( $attributes['target'] ) ? $attributes['target'] : false,
+			'class'  => isset( $attributes['class'] ) ? $attributes['class'] : 'hizzle-download-link',
+		);
+
+		$anchor = empty( $content ) ? __( 'Download', 'hizzle-downloads' ) : $content;
+
+		return sprintf(
+			'<a href="%s" class="%s" id="%s" %s>%s</a>',
+			esc_url( $download->get_download_url() ),
+			esc_attr( $atts['class'] ),
+			esc_attr( $atts['id'] ),
+			$atts['target'] ? 'target="_blank"' : '',
+			wp_kses_post( $anchor )
+		);
 	}
 
 	/**
