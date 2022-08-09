@@ -211,13 +211,11 @@ class Plugin {
 	 */
 	public function enqueue_gutenberg_assets() {
 
-		wp_enqueue_style( 'noptin_front' );
-
 		wp_enqueue_script(
 			'hizzle-downloads-block',
 			$this->plugin_url() . '/assets/block.js',
 			array( 'wp-blocks', 'wp-element' ),
-			filemtime( noptin()->plugin_path . 'includes/assets/js/dist/blocks-new.js' ),
+			filemtime( $this->plugin_path() . '/assets/block.js' ),
 			true
 		);
 

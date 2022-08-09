@@ -50,7 +50,7 @@ class Menus {
 	public function downloads_menu() {
 		add_submenu_page(
 			'hizzle-downloads',
-			__( 'Hizzle Pay Downloads', 'hizzle-downloads' ),
+			__( 'Hizzle Downloads', 'hizzle-downloads' ),
 			__( 'Files', 'hizzle-downloads' ),
 			'manage_options',
 			'hizzle-downloads',

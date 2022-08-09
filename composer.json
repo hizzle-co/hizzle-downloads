@@ -2,8 +2,8 @@
     "name": "hizzle/downloads",
     "type": "library",
     "description": "Download manager plugin.",
-    "keywords": ["wordpress","hizzle","payment"],
-    "homepage": "http://hizzle.co/pay/",
+    "keywords": ["wordpress","hizzle","downloads"],
+    "homepage": "http://hizzle.co/downloads/",
     "license": "GPL-3.0+",
     "authors": [
         {

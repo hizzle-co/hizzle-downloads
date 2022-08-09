@@ -7,7 +7,7 @@ use \Hizzle\Downloads\Download;
 /**
  * Contains the main downloads admin class
  *
- * @package    Hizzle Pay
+ * @package    Hizzle
  * @subpackage Downloads
  * @since      1.0.0
  */

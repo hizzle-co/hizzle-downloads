@@ -1,0 +1,417 @@
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: Hizzle Downloads\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-08-09 23:20+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: \n"
+"Language: \n"
+"Plural-Forms: nplurals=INTEGER; plural=EXPRESSION;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Loco https://localise.biz/\n"
+"X-Loco-Version: 2.6.2; wp-6.0\n"
+"X-Domain: hizzle-downloads"
+
+#. %1$s contains the filepath of the digital asset.
+#: src/Download_Handler.php:166
+#, php-format
+msgid ""
+"%1$s could not be served using the Force Download method. A redirect will be "
+"used instead."
+msgstr ""
+
+#. %1$s contains the filepath of the digital asset.
+#: src/Download_Handler.php:134
+#, php-format
+msgid ""
+"%1$s could not be served using the X-Accel-Redirect/X-Sendfile method. A "
+"Force Download will be used instead."
+msgstr ""
+
+#: src/data/db-schema.php:66
+msgid "A key value array of additional metadata about the download"
+msgstr ""
+
+#. Description of the plugin
+msgid "A lightweight download manager plugin."
+msgstr ""
+
+#: src/html-display-downloads.php:87
+msgid "Action"
+msgstr ""
+
+#: src/Admin/views/html-edit-download.php:139
+msgid "Add another rule"
+msgstr ""
+
+#: src/Admin/views/html-edit-download.php:25
+msgid "Add Downloadable File"
+msgstr ""
+
+#: src/Admin/views/html-downloads-list.php:19
+#: src/Admin/views/html-edit-download.php:23
+msgid "Add New"
+msgstr ""
+
+#: src/Admin/views/html-edit-download.php:140
+msgid "Add rule"
+msgstr ""
+
+#: src/Admin/views/html-edit-download.php:104
+msgid "all"
+msgstr ""
+
+#: src/Installer.php:93
+msgid "An error occurred while creating required database tables."
+msgstr ""
+
+#: src/Admin/views/html-edit-download.php:132
+msgid "and"
+msgstr ""
+
+#: src/Admin/views/html-edit-download.php:105
+msgid "any"
+msgstr ""
+
+#. File name.
+#: src/Admin/Downloads_Table.php:182
+#, php-format
+msgid "Are you sure you want to delete %s?"
+msgstr ""
+
+#: src/Plugin.php:225
+msgid "Available downloads will appear here"
+msgstr ""
+
+#: src/Admin/Downloads_Table.php:262
+msgid "Category"
+msgstr ""
+
+#: src/Admin/views/html-edit-download.php:84
+msgid "Conditional Logic"
+msgstr ""
+
+#: src/Admin/views/html-notice-base-table-missing.php:31
+msgid "Create tables"
+msgstr ""
+
+#: src/Admin/views/html-notice-base-table-missing.php:16
+msgid "Database tables missing"
+msgstr ""
+
+#: src/Admin/Downloads_Table.php:183 src/Admin/Downloads_Table.php:210
+#: src/Admin/Download_Logs_Table.php:237
+msgid "Delete"
+msgstr ""
+
+#: src/Plugin.php:224
+msgid "Displays a list of available downloads for the current user"
+msgstr ""
+
+#: src/html-display-downloads.php:98 src/Plugin.php:273
+msgid "Download"
+msgstr ""
+
+#: src/Admin/Downloads_Table.php:263
+msgid "Download Count"
+msgstr ""
+
+#: src/Admin/Downloads.php:134
+msgid "Download saved successfully."
+msgstr ""
+
+#: src/Admin/views/html-downloads-list.php:18
+msgid "Downloadable Files"
+msgstr ""
+
+#: src/Admin/views/html-download-logs.php:17
+msgid "Downloadable Logs"
+msgstr ""
+
+#: src/Admin/views/html-edit-download.php:101
+msgid "downloads if"
+msgstr ""
+
+#: src/Admin/Downloads_Table.php:175
+msgid "Edit"
+msgstr ""
+
+#: src/Admin/views/html-edit-download.php:22
+msgid "Edit Downloadable File"
+msgstr ""
+
+#: src/Admin/Downloads.php:138
+msgid "Error saving the download."
+msgstr ""
+
+#: src/html-display-downloads.php:86 src/Admin/Download_Logs_Table.php:288
+msgid "File"
+msgstr ""
+
+#: src/Admin/views/html-edit-download.php:66
+msgid "File Category"
+msgstr ""
+
+#: src/Admin/Downloads_Table.php:260 src/Admin/views/html-edit-download.php:47
+msgid "File Name"
+msgstr ""
+
+#: src/Download_Handler.php:174
+msgid "File not found"
+msgstr ""
+
+#: src/Admin/Downloads_Table.php:261 src/Admin/views/html-edit-download.php:56
+msgid "File URL"
+msgstr ""
+
+#: src/Admin/Menus.php:54
+msgid "Files"
+msgstr ""
+
+#: src/Admin/views/html-edit-download.php:68
+msgid "For example, General"
+msgstr ""
+
+#: src/Admin/views/html-edit-download.php:58
+msgid "For example, https://example.com/my-file.zip"
+msgstr ""
+
+#: src/Admin/views/html-edit-download.php:49
+msgid "For example, my-file.zip"
+msgstr ""
+
+#: src/Download_Handler.php:434
+msgid "Headers already sent when generating download error message."
+msgstr ""
+
+#. Author of the plugin
+msgid "Hizzle"
+msgstr ""
+
+#: src/Plugin.php:223
+msgid "Hizzle > Available Downloads"
+msgstr ""
+
+#: src/Admin/Menus.php:74
+msgid "Hizzle download logs"
+msgstr ""
+
+#. Name of the plugin
+#: src/Admin/Admin.php:104 src/Admin/Menus.php:36 src/Admin/Menus.php:37
+#: src/Admin/Menus.php:53
+msgid "Hizzle Downloads"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://hizzle.co"
+msgstr ""
+
+#. URI of the plugin
+msgid "https://hizzle.co/download-manager/"
+msgstr ""
+
+#. Download ID.
+#: src/Admin/Downloads_Table.php:168 src/Admin/Download_Logs_Table.php:141
+#, php-format
+msgid "ID: %d"
+msgstr ""
+
+#: src/functions.php:380
+msgid "IP Address"
+msgstr ""
+
+#: src/Admin/views/html-edit-download.php:118
+msgid "is"
+msgstr ""
+
+#: src/Admin/views/html-edit-download.php:119
+msgid "is not"
+msgstr ""
+
+#: src/Admin/Menus.php:75
+msgid "Logs"
+msgstr ""
+
+#: src/html-display-downloads.php:73
+msgid "No downloads found."
+msgstr ""
+
+#: src/Admin/views/html-edit-download.php:108
+msgid "of the following rules are true:"
+msgstr ""
+
+#. %1%s: Missing tables (seperated by ",")
+#: src/Admin/views/html-notice-base-table-missing.php:23
+#, php-format
+msgid ""
+"One or more database tables required for Hizzle Downloads to function are "
+"missing, some features may not work as expected. Missing tables: %1$s."
+msgstr ""
+
+#: src/Admin/views/html-edit-download.php:97
+msgid "Only allow"
+msgstr ""
+
+#: src/Admin/views/html-edit-download.php:69
+msgid ""
+"Optional. If specified, this download will be grouped together with other "
+"downloads in the same category."
+msgstr ""
+
+#: src/Admin/views/html-edit-download.php:89
+msgid "Optionally allow/prevent downloads depending on specific conditions."
+msgstr ""
+
+#: src/data/db-schema.php:45
+msgid "Optionally group the file by category"
+msgstr ""
+
+#: src/Admin/views/html-edit-download.php:133
+msgid "or"
+msgstr ""
+
+#: src/Admin/views/html-edit-download.php:98
+msgid "Prevent"
+msgstr ""
+
+#: src/Admin/Downloads_Table.php:264 src/Admin/views/html-edit-download.php:75
+msgid "Priority"
+msgstr ""
+
+#: src/functions.php:381
+msgid "Restrict access to this file to specific IP addresses."
+msgstr ""
+
+#: src/functions.php:371
+msgid "Restrict access to this file to specific user roles."
+msgstr ""
+
+#: src/functions.php:376
+msgid "Restrict access to this file to specific users."
+msgstr ""
+
+#: src/Admin/views/html-edit-download.php:147
+msgid "Save Download"
+msgstr ""
+
+#: src/Admin/views/html-downloads-list.php:35
+msgid "Search Downloads"
+msgstr ""
+
+#: src/Admin/views/html-download-logs.php:22
+msgid "Search Logs"
+msgstr ""
+
+#: src/Installer.php:291
+msgid "Settings"
+msgstr ""
+
+#: src/Installer.php:103
+msgid "Successfuly created the required database tables."
+msgstr ""
+
+#: src/data/db-schema.php:91
+msgid "The download date."
+msgstr ""
+
+#: src/data/db-schema.php:99
+msgid "The file ID."
+msgstr ""
+
+#: src/Admin/views/html-edit-download.php:50
+msgid "The file name that is shown to users."
+msgstr ""
+
+#: src/data/db-schema.php:113
+msgid "The ip address that made the download."
+msgstr ""
+
+#: src/data/db-schema.php:32
+msgid "The name of the file."
+msgstr ""
+
+#: src/data/db-schema.php:53
+msgid "The number of times the file has been downloaded."
+msgstr ""
+
+#: src/data/db-schema.php:61
+msgid "The priority order of the file."
+msgstr ""
+
+#: src/Admin/views/html-edit-download.php:78
+msgid "The priority this file should appear when viewing download files."
+msgstr ""
+
+#: src/Admin/Download_Logs_Table.php:90
+msgid "The selected download logs have been deleted."
+msgstr ""
+
+#: src/Admin/Downloads_Table.php:90
+msgid "The selected downloads have been deleted."
+msgstr ""
+
+#: src/data/db-schema.php:38
+msgid "The URL of the file."
+msgstr ""
+
+#: src/Admin/views/html-edit-download.php:60
+msgid "The URL to the downloadable file."
+msgstr ""
+
+#: src/data/db-schema.php:106
+msgid "The user ID."
+msgstr ""
+
+#: src/Download_Handler.php:52
+msgid "This file is not downloadable."
+msgstr ""
+
+#: src/Admin/Download_Logs_Table.php:287
+msgid "Timestamp"
+msgstr ""
+
+#: src/data/db-schema.php:25 src/data/db-schema.php:86
+msgid "Unique identifier for this resource."
+msgstr ""
+
+#: src/Admin/views/html-edit-download.php:59
+msgid "Upload File"
+msgstr ""
+
+#. %s is a shortcode.
+#: src/Admin/views/html-edit-download.php:34
+#, php-format
+msgid "Use the %s shortcode to display a download link on the frontend."
+msgstr ""
+
+#. %s is a shortcode.
+#: src/Admin/views/html-downloads-list.php:28
+#, php-format
+msgid ""
+"Use the %s shortcode to display all downloads that the current user has "
+"access to."
+msgstr ""
+
+#: src/functions.php:375 src/Admin/Download_Logs_Table.php:289
+msgid "User"
+msgstr ""
+
+#: src/Admin/Download_Logs_Table.php:290
+msgid "User IP Address"
+msgstr ""
+
+#: src/functions.php:370
+msgid "User Role"
+msgstr ""
+
+#: src/Download_Handler.php:57
+msgid "You do not have permission to download this file."
+msgstr ""
+
+#: src/Admin/Settings.php:53
+msgid "Your changes were saved successfully."
+msgstr ""
