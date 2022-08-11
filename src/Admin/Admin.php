@@ -190,7 +190,7 @@ class Admin {
 
 		// Do the action.
 		$data = empty( $_POST ) ? urldecode_deep( $_GET ) : wp_unslash( $_POST );
-		do_action( "hizzle_downloads_admin_{$action}", $data, $this );
+		do_action( "hizzle_downloads_admin_{$action}", wp_kses_post_deep( $data ), $this );
 
 	}
 
