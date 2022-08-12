@@ -37,7 +37,7 @@ Use the `[hizzle-downloads]` shortcode to display all the downloadable files tha
 
 = How can I get in touch? =
 
-* Use the [contact form on our website](https://hizzle.co/contact-us/).
+Use the [contact form on our website](https://hizzle.co/contact-us/).
 
 = How can I contribute? =
 
