@@ -4,7 +4,7 @@ Tags: files, downloads, digital downloads
 Requires at least: 4.9
 Tested up to: 6.0
 Requires PHP: 5.6
-Version: 1.0.0
+Version: 1.0.1
 Stable tag: 1.0.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
@@ -52,6 +52,9 @@ There are a lot of ways to contribute to this plugin:-
 Yeah. The downloads list will take your theme's default styling.
 
 == Changelog ==
+
+= 1.0.1 =
+- Rename downloadable files rest controller file name
 
 = 1.0.0 =
 - Initial release

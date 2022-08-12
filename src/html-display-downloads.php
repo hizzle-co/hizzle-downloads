@@ -44,6 +44,7 @@ defined( 'ABSPATH' ) || exit;
 		vertical-align: bottom;
 		border-bottom: 1px solid #dee2e6;
 		background-color: rgba(0,0,0,0.02);
+		text-align: left;
 	}
 
 	.hizzle-available-downloads .table tr:not(:last-child) td {
