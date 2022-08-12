@@ -19,7 +19,7 @@ class REST {
     /**
      * Route controller classes.
      *
-     * @param \Hizzle\Store\REST[]
+     * @param \Hizzle\Store\REST_Controller[]
      */
     public $controllers;
 
@@ -39,7 +39,7 @@ class REST {
 			}
 
 			// Init the controller class.
-            $this->controllers[ $collection->get_name() ] = new \Hizzle\Store\REST( $store->get_namespace(), $collection->get_name() );
+            $this->controllers[ $collection->get_name() ] = new \Hizzle\Store\REST_Controller( $store->get_namespace(), $collection->get_name() );
 		}
 
         // Fire action hook.
