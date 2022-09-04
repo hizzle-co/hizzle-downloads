@@ -48,6 +48,13 @@ class Collection {
 	public $object = null;
 
 	/**
+	 * The capabillity allowed to manage this collection.
+	 *
+	 * @var string
+	 */
+	public $capabillity = 'manage_options';
+
+	/**
 	 * In case this collection is connected to the posts table.
 	 *
 	 * @var string
@@ -427,7 +434,6 @@ class Collection {
 				'type' => 'string',
 			),
 			'validate_callback' => 'rest_validate_request_arg',
-			'enum'              => array_keys( $this->props ),
 			'default'           => array_keys( $this->props ),
 		);
 
@@ -466,7 +472,7 @@ class Collection {
 
 		$query_schema['orderby']         = array(
 			'description'       => __( 'Sort collection by object attribute.', 'hizzle-store' ),
-			'type'              => array( 'object', 'array', 'string' ),
+			'type'              => 'string',
 			'default'           => 'id',
 			'items'             => array(
 				'type' => 'string',
@@ -663,6 +669,8 @@ class Collection {
 
 			$record->apply_changes();
 
+			$this->clear_cache( (object) $record->get_data() );
+
 			do_action( $this->hook_prefix( 'created' ), $record );
 			return $result;
 		}
@@ -819,6 +827,8 @@ class Collection {
 			}
 		}
 
+		$this->clear_cache( (object) $record->get_data() );
+
 		$record->apply_changes();
 
 		do_action( $this->hook_prefix( 'updated', true ), $record );
@@ -838,6 +848,8 @@ class Collection {
 
 		// Fires before deleting a record.
 		do_action( $this->hook_prefix( 'before_delete', true ), $record );
+
+		$this->clear_cache( (object) $record->get_data() );
 
 		// If this is a CPT, delete the post.
 		if ( $this->is_cpt() ) {
