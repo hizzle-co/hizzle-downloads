@@ -5,7 +5,7 @@
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
-        'reference' => '97ff207705de7d266045abdf3c14a42e672d6795',
+        'reference' => '2a0303dd0711c17f68e9148d8dcdd1ad03fda2f0',
         'name' => 'hizzle/downloads',
         'dev' => true,
     ),
@@ -16,7 +16,7 @@
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
-            'reference' => '97ff207705de7d266045abdf3c14a42e672d6795',
+            'reference' => '2a0303dd0711c17f68e9148d8dcdd1ad03fda2f0',
             'dev_requirement' => false,
         ),
         'hizzle/logger' => array(
