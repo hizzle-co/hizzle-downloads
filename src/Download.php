@@ -202,6 +202,25 @@ class Download extends Record {
 	}
 
 	/**
+	 * Get the password.
+	 *
+	 * @return string
+	 */
+	public function get_password() {
+		return $this->get_meta( '_password', '' );
+	}
+
+	/**
+	 * Set the password.
+	 *
+	 * @param string $password New password.
+	 */
+	public function set_password( $password ) {
+		$password = empty( $password ) ? null : $password;
+		$this->update_meta( '_password', $password );
+	}
+
+	/**
 	 * Retrieves the conditional logic.
 	 *
 	 * @return array
@@ -284,6 +303,16 @@ class Download extends Record {
 		$file_url        = $this->get_file_url();
 		$is_downloadable = ( ! empty( $file_url ) && $this->exists() );
 		return apply_filters( 'hizzle_downloads_is_downloadable', $is_downloadable, $this );
+	}
+
+	/**
+	 * Checks if the download file is password protected.
+	 *
+	 * @return bool
+	 */
+	public function is_password_protected() {
+		$password = $this->get_password();
+		return ! empty( $password );
 	}
 
 	/**

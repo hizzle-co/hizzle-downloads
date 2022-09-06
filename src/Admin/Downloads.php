@@ -114,6 +114,7 @@ class Downloads {
 				'file_url'   => isset( $props['file_url'] ) ? $props['file_url'] : null,
 				'category'   => isset( $props['category'] ) ? $props['category'] : null,
 				'menu_order' => isset( $props['menu_order'] ) ? $props['menu_order'] : null,
+				'password'   => isset( $props['password'] ) ? $props['password'] : null,
 			)
 		);
 

@@ -17,9 +17,11 @@ Allow your website visitors to download files from your site. Optionally restric
 This plugin allows you to:-
 
 - Add unlimited downloadable files.
+- Optionally protect each downloadable file with a password.
 - Restrict downloads to specific user roles.
 - Restrict downloads to specific ip addresses.
 - Restrict downloads to specific users.
+- Restrict downloads to newsletter subscribers.
 - Track file downloads.
 
 == Installation ==
@@ -55,6 +57,7 @@ Yeah. The downloads list will take your theme's default styling.
 
 = 1.0.3 =
 - Restrict downloads to newsletter subscribers.
+- Add support for password protected downloads.
 
 = 1.0.2 =
 - Update composer packages.

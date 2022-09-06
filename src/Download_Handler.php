@@ -57,6 +57,11 @@ class Download_Handler {
 			return $this->download_error( new \WP_Error( 'hizzle_downloads_user_cannot_download', __( 'You do not have permission to download this file.', 'hizzle-downloads' ) ) );
 		}
 
+		// Maybe request a password.
+		if ( $file->is_password_protected() ) {
+			$this->maybe_request_password( $file );
+		}
+
 		// Download the file.
 		$parsed_file_path = $file->parse_file_path();
 
@@ -79,6 +84,26 @@ class Download_Handler {
 		}
 
 		exit;
+	}
+
+	/**
+	 * Requests a password if the file is password protected.
+	 *
+	 * @param \Hizzle\Downloads\Download $file The file object.
+	 */
+	protected function maybe_request_password( $file ) {
+
+		// Show a password input form.
+		if ( ! isset( $_POST['hizzle_downloads_file_password'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			require plugin_dir_path( __FILE__ ) . 'html-password-form.php';
+			exit;
+		}
+
+		// Check the password.
+		if ( ! hash_equals( wp_unslash( $_POST['hizzle_downloads_file_password'] ), $file->get_password() ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			$this->download_error( new \WP_Error( 'hizzle_downloads_password_incorrect', __( 'The password you entered is incorrect. Please try again.', 'hizzle-downloads' ) ), $file );
+		}
+
 	}
 
 	/**

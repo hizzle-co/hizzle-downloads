@@ -46,7 +46,7 @@
         <div class="hizzle-downloads-form-field">
             <label for="hizzle-file-name" class="hizzle-downloads-form-field-label"><?php esc_html_e( 'File Name', 'hizzle-downloads' ); ?></label>
             <div class="hizzle-downloads-form-field-input">
-                <input type="text" class="regular-text" name="hizzle_downloads[file_name]" id="hizzle-file-name" value="<?php echo esc_attr( $download->get_file_name() ); ?>" placeholder="<?php esc_attr_e( 'For example, my-file.zip', 'hizzle-downloads' ); ?>" />
+                <input type="text" class="regular-text" name="hizzle_downloads[file_name]" id="hizzle-file-name" value="<?php echo esc_attr( $download->get_file_name() ); ?>" placeholder="<?php esc_attr_e( 'For example, my-file.zip', 'hizzle-downloads' ); ?>"/>
                 <p class="description"><?php esc_html_e( 'The file name that is shown to users.', 'hizzle-downloads' ); ?></p>
             </div>
         </div>
@@ -55,7 +55,7 @@
         <div class="hizzle-downloads-form-field">
             <label for="hizzle-file-url" class="hizzle-downloads-form-field-label"><?php esc_html_e( 'File URL', 'hizzle-downloads' ); ?></label>
             <div class="hizzle-downloads-form-field-input">
-                <input type="text" class="regular-text" name="hizzle_downloads[file_url]" id="hizzle-file-url" value="<?php echo esc_attr( $download->get_file_url() ); ?>" placeholder="<?php esc_attr_e( 'For example, https://example.com/my-file.zip', 'hizzle-downloads' ); ?>" />
+                <input type="text" class="regular-text" name="hizzle_downloads[file_url]" id="hizzle-file-url" value="<?php echo esc_attr( $download->get_file_url() ); ?>" placeholder="<?php esc_attr_e( 'For example, https://example.com/my-file.zip', 'hizzle-downloads' ); ?>"/>
                 <button class="button button-secondary hizzle-upload-downloadable-file"><?php esc_html_e( 'Upload File', 'hizzle-downloads' ); ?></button>
                 <p class="description"><?php esc_html_e( 'The URL to the downloadable file.', 'hizzle-downloads' ); ?></p>
             </div>
@@ -67,6 +67,15 @@
             <div class="hizzle-downloads-form-field-input">
                 <input type="text" class="regular-text" name="hizzle_downloads[category]" id="hizzle-file-url" value="<?php echo esc_attr( $download->get_category() ); ?>" placeholder="<?php esc_attr_e( 'For example, General', 'hizzle-downloads' ); ?>" />
                 <p class="description"><?php esc_html_e( 'Optional. If specified, this download will be grouped together with other downloads in the same category.', 'hizzle-downloads' ); ?></p>
+            </div>
+        </div>
+
+        <!-- File password -->
+        <div class="hizzle-downloads-form-field">
+            <label for="hizzle-file-password" class="hizzle-downloads-form-field-label"><?php esc_html_e( 'File Password', 'hizzle-downloads' ); ?></label>
+            <div class="hizzle-downloads-form-field-input">
+                <input type="password" class="regular-text" name="hizzle_downloads[password]" id="hizzle-file-password" value="<?php echo esc_attr( $download->get_password() ); ?>" placeholder="<?php esc_html_e( 'No Password', 'hizzle-downloads' ); ?>" autocomplete="new-password" />
+                <p class="description"><?php esc_html_e( 'If provided, users will be required to enter the password before being allowed to download this file.', 'hizzle-downloads' ); ?></p>
             </div>
         </div>
 
