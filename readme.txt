@@ -53,6 +53,9 @@ Yeah. The downloads list will take your theme's default styling.
 
 == Changelog ==
 
+= 1.0.3 =
+- Restrict downloads to newsletter subscribers.
+
 = 1.0.2 =
 - Update composer packages.
 

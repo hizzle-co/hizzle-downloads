@@ -382,6 +382,18 @@ function hizzle_downloads_get_conditional_logic_rules() {
         ),
     );
 
+	// Add newsletter subscription status.
+	if ( function_exists( 'noptin' ) ) {
+		$rules['noptin'] = array(
+			'label'       => __( 'Newsletter Status', 'hizzle-downloads' ),
+			'description' => __( 'Restrict access to this file to users who are subscribed to your newsletter.', 'hizzle-downloads' ),
+			'options'     => array(
+				'subscribed'   => __( 'Subscribed', 'hizzle-downloads' ),
+				'unsubscribed' => __( 'Unsubscribed', 'hizzle-downloads' ),
+			),
+		);
+	}
+
     return apply_filters( 'hizzle_downloads_get_conditional_logic_rules', $rules );
 }
 
@@ -423,6 +435,21 @@ function hizzle_download_conditional_logic_rule_met_user_role( $is_valid, $rule 
 	return trim( $rule['value'] ) === $user_role;
 }
 add_filter( 'hizzle_download_conditional_logic_rule_met_user_role', 'hizzle_download_conditional_logic_rule_met_user_role', 10, 2 );
+
+/**
+ * Checks the newsletter subscription rule.
+ *
+ * @param bool $is_valid Whether or not the rule is valid.
+ * @param  array $rule The rule to check.
+ * @return bool
+ */
+function hizzle_download_conditional_logic_rule_met_noptin( $is_valid, $rule ) {
+
+	$is_subscribed = function_exists( 'noptin_is_subscriber' ) && noptin_is_subscriber();
+
+	return 'subscribed' === $rule['value'] ? $is_subscribed : ! $is_subscribed;
+}
+add_filter( 'hizzle_download_conditional_logic_rule_met_noptin', 'hizzle_download_conditional_logic_rule_met_noptin', 10, 2 );
 
 /**
  * Displays available downloads.
