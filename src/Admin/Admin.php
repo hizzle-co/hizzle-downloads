@@ -115,7 +115,7 @@ class Admin {
 				wp_enqueue_media();
 				wp_enqueue_script( 'postbox' );
 				wp_enqueue_script( 'vue', hizzle_downloads()->plugin_url() . '/assets/vue.js', array(), '3.2.37', true );
-				wp_enqueue_script( 'hizzle-edit-download', hizzle_downloads()->plugin_url() . '/assets/edit-download.js', array( 'jquery', 'vue' ), $version, true );
+				wp_enqueue_script( 'hizzle-edit-download', hizzle_downloads()->plugin_url() . '/assets/edit-download.js', array( 'jquery', 'vue', 'wp-api-fetch', 'wp-i18n' ), $version, true );
 			}
 
 			// Settings.

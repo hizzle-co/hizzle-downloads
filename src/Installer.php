@@ -68,7 +68,7 @@ class Installer {
 		self::upgrade_from( (int) get_option( 'hizzle_downloads_db_version', null ) );
 
 		// Verify that all tables were created.
-		self::verify_base_tables();
+		self::verify_base_tables( true );
 
 		// Allow other instances to run.
 		delete_transient( 'hizzle_downloads_installing' );
@@ -137,6 +137,7 @@ class Installer {
 		} else {
 			Notices::remove_notice( 'base_tables_missing' );
 			delete_option( 'hizzle_downloads_schema_missing_tables' );
+			self::update_db_version();
 		}
 
 		return $missing_tables;
@@ -167,8 +168,6 @@ class Installer {
      */
     protected static function upgrade_from_0() {
 		self::create_files();
-		self::create_tables();
-		self::update_db_version();
 	}
 
 	/**
@@ -247,35 +246,58 @@ class Installer {
 
 	/**
 	 * Create files/directories.
+	 *
+	 * @param string $base_dir
 	 */
-	private static function create_files() {
-
-		// Install files and folders for uploading files and prevent hotlinking.
-		$upload_dir = wp_get_upload_dir();
+	public static function prepare_upload_dir( $base_dir ) {
 
 		$files = array(
 			array(
-				'base'    => $upload_dir['basedir'] . '/hizzle_uploads',
 				'file'    => 'index.html',
 				'content' => '',
 			),
 			array(
-				'base'    => $upload_dir['basedir'] . '/hizzle_uploads',
 				'file'    => '.htaccess',
 				'content' => 'redirect' === hizzle_download_method() ? 'Options -Indexes' : 'deny from all',
 			),
 		);
 
 		foreach ( $files as $file ) {
-			if ( wp_mkdir_p( $file['base'] ) && ! file_exists( trailingslashit( $file['base'] ) . $file['file'] ) ) {
-				$file_handle = @fopen( trailingslashit( $file['base'] ) . $file['file'], 'wb' ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged, WordPress.WP.AlternativeFunctions.file_system_read_fopen
-				if ( $file_handle ) {
-					fwrite( $file_handle, $file['content'] ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fwrite
-					fclose( $file_handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fclose
-				}
+			$file_path = trailingslashit( $base_dir ) . $file['file'];
+
+			if ( ! file_exists( $file_path ) && wp_mkdir_p( $base_dir ) ) {
+				self::create_file( $file_path, $file['content'] );
 			}
 		}
 
+	}
+
+	/**
+	 * Create files/directories.
+	 */
+	private static function create_files() {
+
+		// Install files and folders for uploading files and prevent hotlinking.
+		$upload_dir = wp_get_upload_dir();
+
+		self::prepare_upload_dir( $upload_dir['basedir'] . '/hizzle_uploads' );
+
+	}
+
+	/**
+	 * Creates a file
+	 *
+	 * @param string $file_path
+	 * @param string $file_contents
+	 */
+	public static function create_file( $file_path, $file_content ) {
+		$file_handle = @fopen( $file_path, 'wb' ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged, WordPress.WP.AlternativeFunctions.file_system_read_fopen
+		if ( $file_handle ) {
+			fwrite( $file_handle, $file_content ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fwrite
+			fclose( $file_handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fclose
+		} else {
+			hizzle_downloads()->logger->error( sprintf( 'Could not create %s file.', $file_path ), 'hizzle_downloads' );
+		}
 	}
 
 }

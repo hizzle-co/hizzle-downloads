@@ -24,41 +24,41 @@ class Downloads_Table extends \Hizzle\Store\List_Table {
 	}
 
 	/**
-	 * Displays a column.
+	 * File url column.
 	 *
-	 * @param Download $item        item.
-	 * @param string $column_name column name.
+	 * @param Download $item item.
 	 */
-	public function column_default( $item, $column_name ) {
+	public function column_file_url( $item ) {
+		$url = $item->get_file_url();
 
-		switch ( $column_name ) {
-
-			case 'file_name':
-				return sprintf(
-					'<div class="download-row-name-wrapper"><div class="row-title"><a href="%s"><strong>%s</strong></a></div><div class="row-actions">%s</div></div>',
-					esc_url( $item->get_edit_url() ),
-					esc_html( $item->get_file_name() ),
-					$this->get_download_row_actions( $item )
-				);
-
-			case 'file_url':
-				return esc_url( $item->get_file_url() );
-
-			case 'download_count':
-				return (int) $item->get_download_count();
-
-			case 'menu_order':
-				return (int) $item->get_menu_order();
-
-			case 'category':
-				$category = $item->get_category();
-				return empty( $category ) ? '&mdash;' : esc_html( $category );
-
+		if ( empty( $url ) ) {
+			return '&mdash;';
 		}
 
-		// Allow plugins to display custom columns.
-		do_action( "hizzle_display_downloads_table_$column_name", $item );
+		// Strip uploads directory from URL.
+		$uploads_dir = wp_get_upload_dir();
+		$url         = str_replace( $uploads_dir['baseurl'], '', $url );
 
+		return sprintf(
+			'<a href="%s" title="%s" target="_blank">%s</a>',
+			esc_url( $item->get_download_url() ),
+			esc_attr( $item->get_file_url() ),
+			esc_html( $url )
+		);
+	}
+
+	/**
+	 * File name column.
+	 *
+	 * @param Download $item item.
+	 */
+	public function column_file_name( $item ) {
+		return sprintf(
+			'<div class="download-row-name-wrapper"><div class="row-title"><a href="%s"><strong>%s</strong></a></div><div class="row-actions">%s</div></div>',
+			esc_url( $item->get_edit_url() ),
+			esc_html( $item->get_file_name() ),
+			$this->get_download_row_actions( $item )
+		);
 	}
 
 	/**
@@ -108,9 +108,16 @@ class Downloads_Table extends \Hizzle\Store\List_Table {
 			'file_name'      => __( 'File Name', 'hizzle-downloads' ),
 			'file_url'       => __( 'File URL', 'hizzle-downloads' ),
 			'category'       => __( 'Category', 'hizzle-downloads' ),
+			'repo_link'      => __( 'Repo', 'hizzle-downloads' ),
+			'version'        => __( 'Version', 'hizzle-downloads' ),
 			'download_count' => __( 'Download Count', 'hizzle-downloads' ),
 			'menu_order'     => __( 'Priority', 'hizzle-downloads' ),
 		);
+
+		if ( ! hizzle_downloads_using_github_updater() ) {
+			unset( $columns['repo_link'] );
+			unset( $columns['version'] );
+		}
 
 		/**
 		 * Filters the columns shown in the downloads list table.
@@ -132,6 +139,7 @@ class Downloads_Table extends \Hizzle\Store\List_Table {
 			'download_count' => array( 'download_count', true ),
 			'menu_order'     => array( 'menu_order', true ),
 			'category'       => array( 'category', true ),
+			'repo_link'      => array( 'git_url', true ),
 		);
 
 		/**

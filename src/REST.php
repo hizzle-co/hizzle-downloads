@@ -42,6 +42,11 @@ class REST {
             $this->controllers[ $collection->get_name() ] = new \Hizzle\Store\REST_Controller( $store->get_namespace(), $collection->get_name() );
 		}
 
+		// GitHub updater.
+		if ( hizzle_downloads_using_github_updater() ) {
+			$this->controllers['github_updater'] = new GitHub_Updater( $store->get_namespace() );
+		}
+
         // Fire action hook.
         do_action( 'hizzle_downloads_rest_init', $this );
 	}

@@ -145,6 +145,56 @@ class Download extends Record {
 	}
 
 	/**
+	 * Get the repo URL.
+	 *
+	 * @param string $context What the value is for. Valid values are 'view' and 'edit'.
+	 * @return string
+	 */
+	public function get_git_url( $context = 'view' ) {
+		return $this->get_prop( 'git_url', $context );
+	}
+
+	/**
+	 * Set the GitHub repo URL.
+	 *
+	 * @param string $git_url Repo URL.
+	 */
+	public function set_git_url( $git_url ) {
+		$git_url = empty( $git_url ) ? null : esc_url_raw( strtolower( trailingslashit( $git_url ) ) );
+		$this->set_prop( 'git_url', $git_url );
+	}
+
+	/**
+	 * Returns the repo.
+	 *
+	 * @param string $context What the value is for. Valid values are 'view' and 'edit'.
+	 * @return string
+	 */
+	public function get_repo( $context = 'view' ) {
+		$url = $this->get_git_url( $context );
+
+		if ( empty( $url ) ) {
+			return '';
+		}
+
+		// Remove https://github.com from the URL.
+		return untrailingslashit( str_replace( 'https://github.com/', '', $url ) );
+	}
+
+	/**
+	 * Returns the repo link.
+	 */
+	public function get_repo_link() {
+		$url = $this->get_git_url();
+
+		if ( empty( $url ) ) {
+			return '';
+		}
+
+		return sprintf( '<a href="%s" target="_blank">%s</a>', esc_url( $url ), esc_html( $this->get_repo() ) );
+	}
+
+	/**
 	 * Get the file category.
 	 *
 	 * @param string $context What the value is for. Valid values are 'view' and 'edit'.
@@ -218,6 +268,25 @@ class Download extends Record {
 	public function set_password( $password ) {
 		$password = empty( $password ) ? null : $password;
 		$this->update_meta( '_password', $password );
+	}
+
+	/**
+	 * Get the version.
+	 *
+	 * @return string
+	 */
+	public function get_version() {
+		return $this->get_meta( 'version', '' );
+	}
+
+	/**
+	 * Set the version.
+	 *
+	 * @param string $version New version.
+	 */
+	public function set_version( $version ) {
+		$version = empty( $version ) ? null : $version;
+		$this->update_meta( 'version', $version );
 	}
 
 	/**
@@ -405,6 +474,27 @@ class Download extends Record {
 		// Update download count.
 		$this->set_download_count( $this->get_download_count() + 1 );
 		$this->save();
+	}
+
+	/**
+	 * Adds GIT attributes.
+	 *
+	 * @param array $attributes The attributes.
+	 */
+	public function add_git_info( $attributes ) {
+
+		if ( ! is_array( $attributes ) ) {
+			return;
+		}
+
+		foreach ( $attributes as $key => $value ) {
+
+			if ( is_callable( array( $this, "set_{$key}" ) ) ) {
+				$this->{"set_{$key}"}( $value );
+			} else {
+				$this->update_meta( $key, $value );
+			}
+		}
 	}
 
 }

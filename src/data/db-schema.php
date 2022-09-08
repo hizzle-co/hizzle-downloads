@@ -38,6 +38,12 @@ return array(
 				'description' => __( 'The URL of the file.', 'hizzle-downloads' ),
 			),
 
+			'git_url'       => array(
+				'type'        => 'TEXT',
+				'nullable'    => false,
+				'description' => __( 'The GitHub repo URL.', 'hizzle-downloads' ),
+			),
+
 			'category'       => array(
 				'type'        => 'VARCHAR',
 				'length'      => 20,

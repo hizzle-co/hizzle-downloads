@@ -112,11 +112,19 @@ class Downloads {
 			array(
 				'file_name'  => isset( $props['file_name'] ) ? $props['file_name'] : null,
 				'file_url'   => isset( $props['file_url'] ) ? $props['file_url'] : null,
+				'git_url'    => isset( $props['git_url'] ) ? $props['git_url'] : null,
 				'category'   => isset( $props['category'] ) ? $props['category'] : null,
 				'menu_order' => isset( $props['menu_order'] ) ? $props['menu_order'] : null,
 				'password'   => isset( $props['password'] ) ? $props['password'] : null,
-			)
+			),
+			true
 		);
+
+		// GitHub updates.
+		if ( isset( $props['git_update_key'] ) && ! empty( $props['git_update_key'] ) ) {
+			$download->add_git_info( get_transient( $props['git_update_key'] ) );
+			delete_transient( $props['git_update_key'] );
+		}
 
 		// Conditional logic.
 		$download->update_meta( '_conditional_logic', isset( $props['conditional_logic'] ) ? $props['conditional_logic'] : array() );
@@ -182,17 +190,13 @@ class Downloads {
 	 * @since 1.0.0
 	 */
 	public function update_filename( $full_filename, $ext, $dir ) {
-		// phpcs:disable WordPress.Security.NonceVerification.Missing
-		if ( ! isset( $_POST['type'] ) || ! 'hizzle_downloadable_file' === $_POST['type'] ) {
-			return $full_filename;
-		}
 
-		if ( ! strpos( $dir, 'hizzle_uploads' ) ) {
+		// Ensure this is our upload and that file names should be randomized.
+		if ( ! strpos( $dir, 'hizzle_uploads' ) || ! apply_filters( 'hizzle_downloads_randomize_file_name', true ) ) {
 			return $full_filename;
 		}
 
 		return $this->unique_filename( $full_filename, $ext );
-		// phpcs:enable WordPress.Security.NonceVerification.Missing
 	}
 
 	/**

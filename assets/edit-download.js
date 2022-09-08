@@ -5,6 +5,7 @@ jQuery( document ).ready( function( $ ) {
     var downloadable_file_frame;
 	var file_path_field;
 
+	// Upload file.
 	$( document.body ).on( 'click', '.hizzle-upload-downloadable-file', function( event ) {
 		var $el = $( this );
 
@@ -67,6 +68,69 @@ jQuery( document ).ready( function( $ ) {
 
 		// Finally, open the modal.
 		downloadable_file_frame.open();
+	});
+
+	// Fetch GitHub repo.
+	$( document.body ).on( 'click', '.hizzle-downloads-fetch-github-repo', function( event ) {
+		event.preventDefault();
+
+		$( '.hizzle-git-url-spinner' ).css( 'visibility', 'visible' );
+		$( '.hizzle-git-url-success, .hizzle-git-url-error' ).hide();
+
+		// Disable button.
+		$( '.hizzle-downloads-fetch-github-repo' ).prop( 'disabled', true );
+
+		// POST
+		wp
+
+			// Send the repo URL to the server.
+			.apiFetch( {
+				path: '/hizzle_download/v1/github-updater/manual-update',
+				method: 'POST',
+				data: {
+					repository: $( '#hizzle-git-url' ).val(),
+					tag: $( '#hizzle-git-tag' ).val(),
+				},
+			} )
+
+			.then( function ( res ) {
+				$( '#hizzle-git-update-key' ).val( res.update_key );
+				$( '#hizzle-file-url' ).val( res.file_url );
+
+				$( '.hizzle-git-url-success' ).show();
+
+				setTimeout( function() {
+					$( '.hizzle-git-url-success' ).hide();
+				}, 4000);
+
+				return res;
+			} )
+
+			// Handle errors.
+			.catch( function ( err ) {
+
+				// Error will have a message, code and data that's passed to WP_Error.
+				if ( err && err.message ) {
+					var error = err.message;
+				}
+
+				// If not, render the default error message.
+				else {
+					var error = wp.i18n.__( 'An unexpected error occured. Please try again.', 'hizzle-downloads' );
+				}
+
+				$( '.hizzle-git-url-error' ).text( error ).show();
+
+				setTimeout( function() {
+					$( '.hizzle-git-url-error' ).hide();
+				}, 6000);
+			} )
+
+			// Unblock the form.
+			.finally( function() {
+				$( '.hizzle-git-url-spinner' ).css( 'visibility', 'hidden' );
+				$( '.hizzle-downloads-fetch-github-repo' ).prop( 'disabled', false );
+			});
 	});
 
 	// Conditional logic editing app.

@@ -55,17 +55,34 @@
         <div class="hizzle-downloads-form-field">
             <label for="hizzle-file-url" class="hizzle-downloads-form-field-label"><?php esc_html_e( 'File URL', 'hizzle-downloads' ); ?></label>
             <div class="hizzle-downloads-form-field-input">
-                <input type="text" class="regular-text" name="hizzle_downloads[file_url]" id="hizzle-file-url" value="<?php echo esc_attr( $download->get_file_url() ); ?>" placeholder="<?php esc_attr_e( 'For example, https://example.com/my-file.zip', 'hizzle-downloads' ); ?>"/>
+                <input type="text" class="regular-text" name="hizzle_downloads[file_url]" id="hizzle-file-url" value="<?php echo esc_attr( $download->get_file_url( 'edit' ) ); ?>" placeholder="<?php printf( /* translators: %s Example URL */ esc_attr__( 'For example, %s', 'hizzle-downloads' ), 'https://example.com/my-file.zip' ); ?>"/>
                 <button class="button button-secondary hizzle-upload-downloadable-file"><?php esc_html_e( 'Upload File', 'hizzle-downloads' ); ?></button>
                 <p class="description"><?php esc_html_e( 'The URL to the downloadable file.', 'hizzle-downloads' ); ?></p>
             </div>
         </div>
 
+        <?php if ( hizzle_downloads_using_github_updater() ) : ?>
+            <!-- Repo URL -->
+            <div class="hizzle-downloads-form-field">
+                <label for="hizzle-git-url" class="hizzle-downloads-form-field-label"><?php esc_html_e( 'GitHub URL', 'hizzle-downloads' ); ?></label>
+                <div class="hizzle-downloads-form-field-input">
+                    <input type="text" class="regular-text" name="hizzle_downloads[git_url]" id="hizzle-git-url" value="<?php echo esc_attr( $download->get_git_url( 'edit' ) ); ?>" placeholder="<?php printf( /* translators: %s Example URL */ esc_attr__( 'For example, %s', 'hizzle-downloads' ), 'https://github.com/octocat/Hello-World/' ); ?>"/>
+                    <input type="hidden" id="hizzle-git-tag" value="latest">
+                    <input type="hidden" id="hizzle-git-update-key" name="hizzle_downloads[git_update_key]">
+                    <button class="button button-secondary hizzle-downloads-fetch-github-repo"><?php esc_html_e( 'Fetch', 'hizzle-downloads' ); ?></button>
+                    <span class="spinner hizzle-git-url-spinner" style="float: none;"></span>
+                    <p class="description"><?php esc_html_e( 'The URL to the GitHub repo if this file is hosted on GitHub.', 'hizzle-downloads' ); ?></p>
+                    <p class="hizzle-git-url-error" style="display: none;"></p>
+                    <p class="hizzle-git-url-success" style="display: none;"><?php esc_html_e( 'Repo fetched successfuly.', 'hizzle-downloads' ); ?></p>
+                </div>
+            </div>
+        <?php endif; ?>
+
         <!-- File category -->
         <div class="hizzle-downloads-form-field">
             <label for="hizzle-file-category" class="hizzle-downloads-form-field-label"><?php esc_html_e( 'File Category', 'hizzle-downloads' ); ?></label>
             <div class="hizzle-downloads-form-field-input">
-                <input type="text" class="regular-text" name="hizzle_downloads[category]" id="hizzle-file-url" value="<?php echo esc_attr( $download->get_category() ); ?>" placeholder="<?php esc_attr_e( 'For example, General', 'hizzle-downloads' ); ?>" />
+                <input type="text" class="regular-text" name="hizzle_downloads[category]" id="hizzle-file-category" value="<?php echo esc_attr( $download->get_category( 'edit' ) ); ?>" placeholder="<?php esc_attr_e( 'For example, General', 'hizzle-downloads' ); ?>" />
                 <p class="description"><?php esc_html_e( 'Optional. If specified, this download will be grouped together with other downloads in the same category.', 'hizzle-downloads' ); ?></p>
             </div>
         </div>
@@ -74,7 +91,7 @@
         <div class="hizzle-downloads-form-field">
             <label for="hizzle-file-password" class="hizzle-downloads-form-field-label"><?php esc_html_e( 'File Password', 'hizzle-downloads' ); ?></label>
             <div class="hizzle-downloads-form-field-input">
-                <input type="password" class="regular-text" name="hizzle_downloads[password]" id="hizzle-file-password" value="<?php echo esc_attr( $download->get_password() ); ?>" placeholder="<?php esc_html_e( 'No Password', 'hizzle-downloads' ); ?>" autocomplete="new-password" />
+                <input type="password" class="regular-text" name="hizzle_downloads[password]" id="hizzle-file-password" value="<?php echo esc_attr( $download->get_password( 'edit' ) ); ?>" placeholder="<?php esc_html_e( 'No Password', 'hizzle-downloads' ); ?>" autocomplete="new-password" />
                 <p class="description"><?php esc_html_e( 'If provided, users will be required to enter the password before being allowed to download this file.', 'hizzle-downloads' ); ?></p>
             </div>
         </div>
@@ -83,7 +100,7 @@
         <div class="hizzle-downloads-form-field">
             <label for="hizzle-menu-order" class="hizzle-downloads-form-field-label"><?php esc_html_e( 'Priority', 'hizzle-downloads' ); ?></label>
             <div class="hizzle-downloads-form-field-input">
-                <input type="number" class="regular-text" name="hizzle_downloads[menu_order]" id="hizzle-menu-order" value="<?php echo esc_attr( $download->get_menu_order() ); ?>" placeholder="0"/>
+                <input type="number" class="regular-text" name="hizzle_downloads[menu_order]" id="hizzle-menu-order" value="<?php echo esc_attr( $download->get_menu_order( 'edit' ) ); ?>" placeholder="0"/>
                 <p class="description"><?php esc_html_e( 'The priority this file should appear when viewing download files.', 'hizzle-downloads' ); ?></p>
             </div>
         </div>

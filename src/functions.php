@@ -250,6 +250,16 @@ function hizzle_get_download_by_file_name( $file_name ) {
 }
 
 /**
+ * Fetch download by git URL.
+ *
+ * @param string $git_url Git repo URL.
+ * @return Download|WP_Error Download object if found, error object if not found.
+ */
+function hizzle_get_download_by_git_url( $git_url ) {
+    return hizzle_get_download( hizzle_downloads_get_collection( 'files' )->get_id_by_prop( 'git_url', sanitize_text_field( strtolower( trailingslashit( $git_url ) ) ) ) );
+}
+
+/**
  * Deletes a download.
  *
  * @param int|string|Download $download_id Download ID object.
@@ -458,4 +468,13 @@ add_filter( 'hizzle_download_conditional_logic_rule_met_noptin', 'hizzle_downloa
  */
 function hizzle_downloads_display_downloads( $downloads ) {
 	include plugin_dir_path( __FILE__ ) . 'html-display-downloads.php';
+}
+
+/**
+ * Checks whether or not we're using the GitHub updater.
+ *
+ * @return bool
+ */
+function hizzle_downloads_using_github_updater() {
+	return defined( 'HIZZLE_DOWNLOADS_GITHUB_WEBHOOK_TOKEN' ) && defined( 'HIZZLE_DOWNLOADS_GITHUB_ACCESS_TOKEN' );
 }

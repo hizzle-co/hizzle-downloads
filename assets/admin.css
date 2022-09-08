@@ -1,7 +1,12 @@
 #hizzle-downloads-table .column-menu_order,
 #hizzle-downloads-table .column-category,
+#hizzle-downloads-table .column-repo,
 #hizzle-downloads-table .column-download_count {
     width: 150px;
+}
+
+#hizzle-downloads-table .column-version {
+    width: 100px;
 }
 
 #hizzle-downloads-table .column-file_name {
@@ -59,4 +64,21 @@
 
 #hizzle-edit-download {
 	margin-top: 20px;
+}
+
+#hizzle-edit-download .spinner {
+	float: none;
+    vertical-align: top;
+}
+
+.hizzle-git-url-error {
+	color: #dc3232;
+	font-size: 13px;
+	margin: 2px 0 5px;
+}
+
+.hizzle-git-url-success {
+	color: #46b450;
+	font-size: 13px;
+	margin: 2px 0 5px;
 }
