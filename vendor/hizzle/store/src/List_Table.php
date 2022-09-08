@@ -177,8 +177,8 @@ class List_Table extends \WP_List_Table {
 				return $value->context( 'view' );
 			}
 
-			if ( is_null( $value ) ) {
-				return '&mdash';
+			if ( is_null( $value ) || '' === $value ) {
+				return '&mdash;';
 			}
 
 			if ( is_bool( $value ) ) {

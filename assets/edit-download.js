@@ -136,23 +136,23 @@ jQuery( document ).ready( function( $ ) {
 	// Conditional logic editing app.
 	Vue
 		.createApp({
-			data: function() {
+			data: function data() {
 				return $( '#hizzle-downloads-edit-conditional-logic-app' ).data( 'conditional-logic' );
 			},
 			methods: {
 
 				// Checks if there are rule options.
-				hasRuleOptions: function( rule_type ) {
+				hasRuleOptions: function hasRuleOptions( rule_type ) {
 					return this.allRules[ rule_type ] !== undefined && this.allRules[ rule_type ].options !== undefined;
 				},
 
 				// Retrieves the rule options.
-				getRuleOptions: function( rule_type ) {
+				getRuleOptions: function getRuleOptions( rule_type ) {
 					return this.allRules[ rule_type ].options;
 				},
 
 				// Adds a new rule.
-				addRule: function() {
+				addRule: function addRule() {
 					this.rules.push({
 						type: 'user_role',
 						condition: 'is',
@@ -161,12 +161,12 @@ jQuery( document ).ready( function( $ ) {
 				},
 
 				// Removes an existing rule.
-				removeRule: function( rule ) {
+				removeRule: function removeRule( rule ) {
 					this.rules.splice( this.rules.indexOf( rule ), 1 );
 				},
 
 				// Checks if a rule is the last one.
-				isLastRule: function( index ) {
+				isLastRule: function isLastRule( index ) {
 					return index === this.rules.length - 1;
 				}
 			}

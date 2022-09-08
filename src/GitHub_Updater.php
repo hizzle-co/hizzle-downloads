@@ -44,7 +44,7 @@ class GitHub_Updater {
 					'callback'            => array( $this, 'process_release_webhook' ),
 					'permission_callback' => array( $this, 'validate_webhook_signature' ),
 					'args'                => array(
-						'action'      => array(
+						'action'     => array(
 							'required'          => true,
 							'type'              => 'string',
 							'sanitize_callback' => 'sanitize_text_field',

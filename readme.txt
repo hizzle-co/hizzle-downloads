@@ -4,8 +4,8 @@ Tags: files, downloads, digital downloads
 Requires at least: 4.9
 Tested up to: 6.0
 Requires PHP: 5.6
-Version: 1.0.2
-Stable tag: 1.0.2
+Version: 1.0.3
+Stable tag: 1.0.3
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Donate link: https://noptin.com/products/?utm_source=wp-repo&utm_medium=donate&utm_campaign=readme
@@ -58,6 +58,7 @@ Yeah. The downloads list will take your theme's default styling.
 = 1.0.3 =
 - Restrict downloads to newsletter subscribers.
 - Add support for password protected downloads.
+- Automatically update download files when there is a GitHub release.
 
 = 1.0.2 =
 - Update composer packages.
