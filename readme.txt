@@ -55,6 +55,9 @@ Yeah. The downloads list will take your theme's default styling.
 
 == Changelog ==
 
+= 1.0.4 =
+- Register a software versions REST API route.
+
 = 1.0.3 =
 - Restrict downloads to newsletter subscribers.
 - Add support for password protected downloads.

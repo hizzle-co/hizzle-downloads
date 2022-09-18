@@ -47,6 +47,11 @@ class REST {
 			$this->controllers['github_updater'] = new GitHub_Updater( $store->get_namespace() );
 		}
 
+		// Software versions.
+		if ( apply_filters( 'hizzle_downloads_register_software_versions_rest', hizzle_downloads_using_github_updater() ) ) {
+			$this->controllers['software_versions'] = new REST_Versions( $store->get_namespace() );
+		}
+
         // Fire action hook.
         do_action( 'hizzle_downloads_rest_init', $this );
 	}

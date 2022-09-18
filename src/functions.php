@@ -404,6 +404,7 @@ function hizzle_downloads_get_conditional_logic_rules() {
 		);
 	}
 
+	// TODO: Add support for WooCommerce subscriptions.
     return apply_filters( 'hizzle_downloads_get_conditional_logic_rules', $rules );
 }
 

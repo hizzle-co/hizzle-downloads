@@ -497,4 +497,29 @@ class Download extends Record {
 		}
 	}
 
+	/**
+	 * Returns an array of version info.
+	 *
+	 * @return array
+	 */
+	public function get_version_info() {
+
+		return apply_filters(
+			'hizzle_downloads_get_version_info',
+			array(
+				'name'           => $this->get_file_name(),
+				'version'        => $this->get_version(),
+				'author'         => get_bloginfo( 'name' ),
+				'author_profile' => home_url(),
+				'download_link'  => $this->is_downloadable() ? $this->get_download_url() : '',
+				'sections'       => array_filter(
+					array(
+						'changelog' => $this->get_meta( 'changelog', '' ),
+					)
+				),
+			),
+			$this
+		);
+	}
+
 }

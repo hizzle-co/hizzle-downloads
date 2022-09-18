@@ -442,7 +442,7 @@ class GitHub_Updater {
 
 		if ( class_exists( 'ZipArchive' ) ) {
 			$zip = new \ZipArchive();
-			if ( true === $zip->open( $release_details['file_path'], \ZipArchive::RDONLY ) ) {
+			if ( true === $zip->open( $release_details['file_path'] ) ) {
 
 				foreach ( $files as $file ) {
 					$content = $zip->getFromName( $file );
