@@ -403,7 +403,7 @@ class Record {
 	 */
 	protected function set_date_prop( $prop, $value ) {
 		try {
-			if ( empty( $value ) ) {
+			if ( empty( $value ) || ( is_string( $value ) && false !== strpos( $value, '0000-00-00' ) ) ) {
 				$this->set_prop( $prop, null );
 				return;
 			}
@@ -496,7 +496,7 @@ class Record {
 
 	/**
 	 * Retrieves an array of meta data for an object.
-	 * 
+	 *
 	 * @since 1.0.0
 	 * @param string $context Context to retrieve meta data for.
 	 * @return array|string

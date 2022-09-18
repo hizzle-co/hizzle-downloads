@@ -56,16 +56,16 @@
         },
         {
             "name": "hizzle/store",
-            "version": "0.0.7",
+            "version": "0.0.8",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hizzle-co/datastore.git",
-                "reference": "4182a34fbfa06443fe4c17d2201caa1a4943f2ad"
+                "reference": "62489284552ef6f7bc601014020b1a948b148c7b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hizzle-co/datastore/zipball/4182a34fbfa06443fe4c17d2201caa1a4943f2ad",
-                "reference": "4182a34fbfa06443fe4c17d2201caa1a4943f2ad",
+                "url": "https://api.github.com/repos/hizzle-co/datastore/zipball/62489284552ef6f7bc601014020b1a948b148c7b",
+                "reference": "62489284552ef6f7bc601014020b1a948b148c7b",
                 "shasum": ""
             },
             "require": {
@@ -98,9 +98,9 @@
             ],
             "support": {
                 "issues": "https://github.com/hizzle-co/datastore/issues",
-                "source": "https://github.com/hizzle-co/datastore/tree/0.0.7"
+                "source": "https://github.com/hizzle-co/datastore/tree/0.0.8"
             },
-            "time": "2022-09-08T08:18:28+00:00"
+            "time": "2022-09-18T06:21:17+00:00"
         }
     ],
     "packages-dev": [],
