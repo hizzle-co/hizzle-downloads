@@ -92,7 +92,8 @@ class REST_Versions {
 
 			if ( empty( $download_file ) || ! $download_file->exists() ) {
 				$prepared[ $download ] = array(
-					'error' => __( 'Download file not found.', 'hizzle-downloads' ),
+					'error'      => __( 'Download file not found.', 'hizzle-downloads' ),
+					'error_code' => 'download_file_not_found',
 				);
 				continue;
 			}

@@ -46,7 +46,7 @@
         <div class="hizzle-downloads-form-field">
             <label for="hizzle-file-name" class="hizzle-downloads-form-field-label"><?php esc_html_e( 'File Name', 'hizzle-downloads' ); ?></label>
             <div class="hizzle-downloads-form-field-input">
-                <input type="text" class="regular-text" name="hizzle_downloads[file_name]" id="hizzle-file-name" value="<?php echo esc_attr( $download->get_file_name() ); ?>" placeholder="<?php esc_attr_e( 'For example, my-file.zip', 'hizzle-downloads' ); ?>"/>
+                <input type="text" class="regular-text" name="hizzle_downloads[file_name]" id="hizzle-file-name" value="<?php echo esc_attr( $download->get_file_name() ); ?>" placeholder="<?php esc_attr_e( 'For example, My Ebook', 'hizzle-downloads' ); ?>"/>
                 <p class="description"><?php esc_html_e( 'The file name that is shown to users.', 'hizzle-downloads' ); ?></p>
             </div>
         </div>

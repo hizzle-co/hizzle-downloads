@@ -122,7 +122,7 @@ class Download extends Record {
 
 		$filename = apply_filters( 'hizzle_downloaded_file_name', $filename, $this );
 
-		return empty( $filename ) ? $this->get_file_name() : $filename;
+		return empty( $filename ) ? sanitize_key( $this->get_file_name() ) : $filename;
 	}
 
 	/**
