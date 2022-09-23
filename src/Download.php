@@ -511,7 +511,7 @@ class Download extends Record {
 				'version'        => $this->get_version(),
 				'author'         => get_bloginfo( 'name' ),
 				'author_profile' => home_url(),
-				'download_link'  => $this->is_downloadable() ? $this->get_download_url() : '',
+				'download_link'  => $this->current_user_can_download() ? $this->get_download_url() : '',
 				'sections'       => array_filter(
 					array(
 						'changelog' => $this->get_meta( 'changelog', '' ),

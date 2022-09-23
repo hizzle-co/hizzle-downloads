@@ -77,10 +77,16 @@ class REST_Versions {
 
 			if ( is_numeric( $download ) ) {
 				$download_file = hizzle_get_download( absint( $download ) );
-			} elseif ( false === strpos( $download, 'https://' ) ) {
+			} elseif ( false === strpos( $download, '/' ) ) {
 				$download_file = hizzle_get_download_by_file_name( $download );
 			} else {
-				$download_file = hizzle_get_download_by_git_url( $download );
+				$git_url = $download;
+
+				if ( 0 !== strpos( $git_url, 'http' ) ) {
+					$git_url = 'https://github.com/' . $git_url;
+				}
+
+				$download_file = hizzle_get_download_by_git_url( $git_url );
 			}
 
 			if ( is_wp_error( $download_file ) ) {
