@@ -275,6 +275,12 @@ class GitHub_Updater {
 			}
 		}
 
+		// Parse changelog markdown.
+		if ( ! empty( $data['changelog'] ) ) {
+			$parsedown         = new Parsedown();
+			$data['changelog'] = $parsedown->text( $data['changelog'] );
+		}
+
 		return $data;
 	}
 
