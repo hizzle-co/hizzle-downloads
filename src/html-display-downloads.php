@@ -71,7 +71,7 @@ defined( 'ABSPATH' ) || exit;
 
 	<?php if ( empty( $downloads ) ) : ?>
 		<p class="hizzle-no-downloads-found">
-			<?php esc_html_e( 'No downloads found.', 'hizzle-downloads' ); ?>
+			<?php esc_html_e( 'No downloads available yet.', 'hizzle-downloads' ); ?>
 		</p>
 	<?php else : ?>
 		<?php foreach ( $downloads as $category => $category_downloads ) : ?>
