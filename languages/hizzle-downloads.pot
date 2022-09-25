@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Hizzle Downloads\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-08 08:23+0000\n"
+"POT-Creation-Date: 2022-09-25 11:43+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: \n"
@@ -30,6 +30,10 @@ msgstr ""
 msgid ""
 "%1$s could not be served using the X-Accel-Redirect/X-Sendfile method. A "
 "Force Download will be used instead."
+msgstr ""
+
+#: src/REST_Versions.php:51
+msgid "A comma-separated list of git URLs or file IDs."
 msgstr ""
 
 #: src/data/db-schema.php:72
@@ -67,10 +71,6 @@ msgstr ""
 
 #: src/Installer.php:92
 msgid "An error occurred while creating required database tables."
-msgstr ""
-
-#: assets/edit-download.js:119
-msgid "An unexpected error occured. Please try again."
 msgstr ""
 
 #: src/Admin/views/html-edit-download.php:158
@@ -125,6 +125,10 @@ msgstr ""
 
 #: src/html-password-form.php:87
 msgid "Download File"
+msgstr ""
+
+#: src/REST_Versions.php:101
+msgid "Download file not found."
 msgstr ""
 
 #: src/Admin/Downloads.php:143
@@ -203,7 +207,7 @@ msgid "For example, General"
 msgstr ""
 
 #: src/Admin/views/html-edit-download.php:49
-msgid "For example, my-file.zip"
+msgid "For example, My Ebook"
 msgstr ""
 
 #: src/Admin/views/html-edit-download.php:67
@@ -273,7 +277,7 @@ msgid "Newsletter Status"
 msgstr ""
 
 #: src/html-display-downloads.php:74
-msgid "No downloads found."
+msgid "No downloads available yet."
 msgstr ""
 
 #: src/Admin/views/html-edit-download.php:94
