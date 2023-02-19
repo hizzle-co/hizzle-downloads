@@ -3,7 +3,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Hizzle Downloads\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-09-25 11:43+0000\n"
+"POT-Creation-Date: 2023-02-19 17:32+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: \n"
@@ -119,8 +119,16 @@ msgstr ""
 msgid "Download"
 msgstr ""
 
+#: src/Admin/Admin.php:208
+msgid "Download could not be deleted."
+msgstr ""
+
 #: src/Admin/Downloads_Table.php:113
 msgid "Download Count"
+msgstr ""
+
+#: src/Admin/Admin.php:206
+msgid "Download deleted."
 msgstr ""
 
 #: src/html-password-form.php:87
@@ -231,7 +239,7 @@ msgid "Hizzle download logs"
 msgstr ""
 
 #. Name of the plugin
-#: src/Admin/Admin.php:104 src/Admin/Menus.php:36 src/Admin/Menus.php:37
+#: src/Admin/Admin.php:105 src/Admin/Menus.php:36 src/Admin/Menus.php:37
 #: src/Admin/Menus.php:53
 msgid "Hizzle Downloads"
 msgstr ""
