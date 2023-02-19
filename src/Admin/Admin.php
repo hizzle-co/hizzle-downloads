@@ -87,6 +87,7 @@ class Admin {
 		// Add hooks.
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqeue_scripts' ), 0 );
 		add_action( 'admin_init', array( $this, 'maybe_do_action' ) );
+		add_action( 'hizzle_downloads_admin_delete_download', array( $this, 'admin_delete_download' ) );
 
 		do_action( 'hizzle_downloads_after_admin_load', $this );
 	}
@@ -194,4 +195,28 @@ class Admin {
 
 	}
 
+	/**
+	 * Deletes a download.
+	 *
+	 * @param  array $data Data.
+	 */
+	public function admin_delete_download( $data ) {
+
+		if ( true === hizzle_delete_download( $data['hizzle_download'] ) ) {
+			Notices::add_custom_notice( 'deleted_download', __( 'Download deleted.', 'hizzle-downloads' ) );
+		} else {
+			Notices::add_custom_notice( 'error_deleting_downloading', __( 'Download could not be deleted.', 'hizzle-downloads' ) );
+		}
+
+		wp_safe_redirect(
+			remove_query_arg(
+				array(
+					'hizzle_download',
+					'hizzle_downloads_admin_action',
+					'hizzle_downloads_nonce',
+				)
+			)
+		);
+		exit;
+	}
 }
