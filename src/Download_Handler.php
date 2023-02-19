@@ -71,6 +71,7 @@ class Download_Handler {
 			// Track the download.
 			if ( ! $download_range['is_range_request'] ) {
 				$current_user_id = get_current_user_id();
+				$current_user_id = apply_filters( 'hizzle_downloads_current_user_id', $current_user_id );
 				$ip_address      = hizzle_downloads_get_ip_address();
 
 				$file->track_download( $current_user_id > 0 ? $current_user_id : null, ! empty( $ip_address ) ? $ip_address : null );
