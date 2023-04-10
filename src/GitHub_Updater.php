@@ -16,6 +16,20 @@ defined( 'ABSPATH' ) || exit;
 class GitHub_Updater {
 
 	/**
+	 * The namespace for the REST API.
+	 *
+	 * @var string
+	 */
+	protected $namespace;
+
+	/**
+	 * The base for the REST API.
+	 *
+	 * @var string
+	 */
+	protected $rest_base;
+
+	/**
 	 * Loads the class.
 	 *
 	 */
