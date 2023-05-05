@@ -2,10 +2,10 @@
 Contributors: picocodes, mutendebrian
 Tags: files, downloads, digital downloads
 Requires at least: 4.9
-Tested up to: 6.1
+Tested up to: 6.2
 Requires PHP: 5.6
-Version: 1.0.5
-Stable tag: 1.0.5
+Version: 1.0.6
+Stable tag: 1.0.6
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Donate link: https://noptin.com/products/?utm_source=wp-repo&utm_medium=donate&utm_campaign=readme
@@ -63,6 +63,10 @@ There are a lot of ways to contribute to this plugin:-
 Yeah. The downloads list will take your theme's default styling.
 
 == Changelog ==
+
+= 1.0.6 =
+- Test on WordPress 6.2.
+- Update composer packages.
 
 = 1.0.5 =
 - Unable to delete a single downloadable file.

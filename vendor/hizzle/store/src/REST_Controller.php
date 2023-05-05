@@ -126,6 +126,19 @@ class REST_Controller extends \WP_REST_Controller {
 			)
 		);
 
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/batch',
+			array(
+				array(
+					'methods'             => \WP_REST_Server::EDITABLE,
+					'callback'            => array( $this, 'batch_items' ),
+					'permission_callback' => array( $this, 'create_item_permissions_check' ),
+					'args'                => $this->get_endpoint_args_for_item_schema( \WP_REST_Server::EDITABLE ),
+				),
+				'schema' => array( $this, 'get_public_batch_schema' ),
+			)
+		);
 	}
 
 	/**
@@ -293,11 +306,30 @@ class REST_Controller extends \WP_REST_Controller {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param WP_REST_Request $request Full details about the request.
-	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 * @param \WP_REST_Request $request Full details about the request.
+	 * @return \WP_REST_Response|\WP_Error Response object on success, or WP_Error object on failure.
 	 */
 	public function get_items( $request ) {
-		// TODO:
+		$collection = $this->fetch_collection();
+
+		try {
+			$query = $collection->query( $request->get_params() );
+		} catch ( Store_Exception $e ) {
+			return new \WP_Error( $e->getErrorCode(), $e->getMessage(), $e->getErrorData() );
+		}
+
+		$items = array();
+
+		foreach ( $query->get_results() as $item ) {
+			$data    = $this->prepare_item_for_response( $item, $request );
+			$items[] = $this->prepare_response_for_collection( $data );
+		}
+
+		$response = rest_ensure_response( $items );
+
+		$response->header( 'X-WP-Total', (int) $query->get_total() );
+
+		return $response;
 	}
 
 	/**
@@ -327,7 +359,7 @@ class REST_Controller extends \WP_REST_Controller {
 	 * @since 1.0.0
 	 *
 	 * @param \WP_REST_Request $request Full details about the request.
-	 * @return \WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 * @return \WP_REST_Response|\WP_Error Response object on success, or WP_Error object on failure.
 	 */
 	public function create_item( $request ) {
 
@@ -342,11 +374,15 @@ class REST_Controller extends \WP_REST_Controller {
 			return $object;
 		}
 
+		if ( ! $object || ! $object->exists() ) {
+			return new \WP_Error( "hizzle_rest_{$this->rest_base}_create_failed", __( 'Creating resource failed.', 'hizzle-store' ), array( 'status' => 500 ) );
+		}
+
 		try {
 			$this->update_additional_fields_for_object( $object, $request );
 
 			// Fires after a single object is created or updated via the REST API.
-			do_action( "hizzle_rest_insert_{$this->rest_base}_object", $object, $request, true );
+			do_action( 'hizzle_rest_insert_object_' . $this->get_normalized_rest_base(), $object, $request, true );
 		} catch ( Store_Exception $e ) {
 			$object->delete();
 			return new \WP_Error( $e->getErrorCode(), $e->getMessage(), $e->getErrorData() );
@@ -388,7 +424,7 @@ class REST_Controller extends \WP_REST_Controller {
 			$this->update_additional_fields_for_object( $object, $request );
 
 			// Fires after a single object is created or updated via the REST API.
-			do_action( "hizzle_rest_insert_{$this->post_type}_object", $object, $request, false );
+			do_action( 'hizzle_rest_insert_object_' . $this->get_normalized_rest_base(), $object, $request, false );
 		} catch ( Store_Exception $e ) {
 			return new \WP_Error( $e->getErrorCode(), $e->getMessage(), $e->getErrorData() );
 		}
@@ -416,11 +452,42 @@ class REST_Controller extends \WP_REST_Controller {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param WP_REST_Request $request Request object.
-	 * @return object|WP_Error The prepared item, or WP_Error object on failure.
+	 * @param  \WP_REST_Request $request Request object.
+	 * @param  bool            $creating If is creating a new object.
+	 * @return Record|\WP_Error The prepared item, or WP_Error object on failure.
 	 */
-	protected function prepare_item_for_database( $request ) {
-		// TODO:
+	protected function prepare_item_for_database( $request, $creating = false ) {
+		$record = $this->get_object( $creating ? 0 : (int) $request['id'] );
+
+		if ( is_wp_error( $record ) ) {
+			return $record;
+		}
+
+		foreach ( array_keys( $this->get_endpoint_args_for_item_schema( \WP_REST_Server::CREATABLE ) ) as $arg ) {
+			if ( isset( $request[ $arg ] ) ) {
+
+				// Special handling for metadata.
+				if ( 'metadata' === $arg ) {
+
+					$metadata = is_array( $request[ $arg ] ) ? $request[ $arg ] : array();
+
+					foreach ( $metadata as $key => $value ) {
+
+						if ( '' === $value ) {
+							$record->remove_meta( $key );
+						} else {
+							$record->update_meta( $key, $value );
+						}
+					}
+
+					continue;
+				}
+
+				$record->set( $arg, $request[ $arg ] );
+			}
+		}
+
+		return $record;
 	}
 
 	/**
@@ -428,12 +495,37 @@ class REST_Controller extends \WP_REST_Controller {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param mixed           $item    WordPress representation of the item.
-	 * @param WP_REST_Request $request Request object.
-	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 * @param Record           $item    WordPress representation of the item.
+	 * @param \WP_REST_Request $request Request object.
+	 * @return \WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
 	 */
 	public function prepare_item_for_response( $item, $request ) {
-		// TODO:
+		$fields = $this->get_fields_for_response( $request );
+		$data   = array();
+
+		foreach ( $item->get_data() as $key => $value ) {
+			if ( rest_is_field_included( $key, $fields ) ) {
+				$data[ $key ] = $value;
+			}
+		}
+
+		$context = ! empty( $request['context'] ) ? $request['context'] : 'view';
+		$data    = $this->add_additional_fields_to_object( $data, $request );
+		$data    = $this->filter_response_by_context( $data, $context );
+
+		// Wrap the data in a response object.
+		$response = rest_ensure_response( $data );
+
+		if ( rest_is_field_included( '_links', $fields ) ) {
+			$links = $this->prepare_links( $item, $request );
+			$response->add_links( $links );
+		}
+
+		/**
+		 * Filters the data for a REST API response.
+		 *
+		 */
+		return apply_filters( "hizzle_store_rest_prepare_{$this->namespace}_{$this->rest_base}", $response, $item, $request );
 	}
 
 	/**
@@ -491,4 +583,172 @@ class REST_Controller extends \WP_REST_Controller {
 		return $this->add_additional_fields_schema( $schema );
 	}
 
+	/**
+	 * Check batch limit.
+	 *
+	 * @param array $items Request items.
+	 * @return bool|WP_Error
+	 */
+	protected function check_batch_limit( $items ) {
+		$limit = apply_filters( 'hizzle_rest_batch_items_limit', 100, $this->get_normalized_rest_base() );
+		$total = 0;
+
+		if ( ! empty( $items['create'] ) ) {
+			$total += count( $items['create'] );
+		}
+
+		if ( ! empty( $items['update'] ) ) {
+			$total += count( $items['update'] );
+		}
+
+		if ( ! empty( $items['delete'] ) ) {
+			$total += count( $items['delete'] );
+		}
+
+		if ( $total > $limit ) {
+			/* translators: %s: items limit */
+			return new \WP_Error( 'hizzle_rest_request_entity_too_large', sprintf( __( 'Unable to accept more than %s items for this request.', 'hizzle-pay' ), $limit ), array( 'status' => 413 ) );
+		}
+
+		return true;
+	}
+
+	/**
+	 * Bulk create, update and delete items.
+	 *
+	 * @param \WP_REST_Request $request Full details about the request.
+	 * @return array Of WP_Error or WP_REST_Response.
+	 */
+	public function batch_items( $request ) {
+		/**
+		 * REST Server
+		 *
+		 * @var \WP_REST_Server $wp_rest_server
+		 */
+		global $wp_rest_server;
+
+		// Get the request params.
+		$items    = array_filter( $request->get_params() );
+		$query    = $request->get_query_params();
+		$response = array();
+
+		// Check batch limit.
+		$limit = $this->check_batch_limit( $items );
+		if ( is_wp_error( $limit ) ) {
+			return $limit;
+		}
+
+		if ( ! empty( $items['create'] ) ) {
+			foreach ( $items['create'] as $item ) {
+				$_item = new \WP_REST_Request( 'POST', $request->get_route() );
+
+				// Default parameters.
+				$defaults = array();
+				$schema   = $this->get_public_item_schema();
+				foreach ( $schema['properties'] as $arg => $options ) {
+					if ( isset( $options['default'] ) ) {
+						$defaults[ $arg ] = $options['default'];
+					}
+				}
+				$_item->set_default_params( $defaults );
+
+				// Set request parameters.
+				$_item->set_body_params( $item );
+
+				// Set query (GET) parameters.
+				$_item->set_query_params( $query );
+
+				$_response = $this->create_item( $_item );
+
+				if ( ! is_wp_error( $_response ) ) {
+					$response[] = $wp_rest_server->response_to_data( $_response, '' );
+				}
+			}
+		}
+
+		if ( ! empty( $items['update'] ) ) {
+			foreach ( $items['update'] as $item ) {
+				$_item = new \WP_REST_Request( 'PUT', $request->get_route() );
+				$_item->set_body_params( $item );
+				$_response = $this->update_item( $_item );
+
+				if ( ! is_wp_error( $_response ) ) {
+					$response[] = $wp_rest_server->response_to_data( $_response, '' );
+				}
+			}
+		}
+
+		if ( ! empty( $items['delete'] ) ) {
+			foreach ( $items['delete'] as $id ) {
+				$id = (int) $id;
+
+				if ( 0 === $id ) {
+					continue;
+				}
+
+				$_item = new \WP_REST_Request( 'DELETE', $request->get_route() );
+				$_item->set_query_params(
+					array(
+						'id'    => $id,
+						'force' => true,
+					)
+				);
+				$this->delete_item( $_item );
+			}
+		}
+
+		do_action( 'hizzle_rest_batch_items_' . $this->get_normalized_rest_base(), $request, $response );
+
+		return rest_ensure_response( $response );
+	}
+
+	/**
+	 * Get the batch schema, conforming to JSON Schema.
+	 *
+	 * @return array
+	 */
+	public function get_public_batch_schema() {
+		$schema = array(
+			'$schema'    => 'http://json-schema.org/draft-04/schema#',
+			'title'      => 'batch',
+			'type'       => 'object',
+			'properties' => array(
+				'create' => array(
+					'description' => __( 'List of created resources.', 'hizzle-store' ),
+					'type'        => 'array',
+					'context'     => array( 'view', 'edit' ),
+					'items'       => array(
+						'type'    => 'object',
+					),
+				),
+				'update' => array(
+					'description' => __( 'List of updated resources.', 'hizzle-store' ),
+					'type'        => 'array',
+					'context'     => array( 'view', 'edit' ),
+					'items'       => array(
+						'type'    => 'object',
+					),
+				),
+				'delete' => array(
+					'description' => __( 'List of delete resources.', 'hizzle-store' ),
+					'type'        => 'array',
+					'context'     => array( 'view', 'edit' ),
+					'items'       => array(
+						'type'    => 'integer',
+					),
+				),
+			),
+		);
+
+		return $schema;
+	}
+
+	/**
+	 * Get normalized rest base.
+	 *
+	 * @return string
+	 */
+	protected function get_normalized_rest_base() {
+		return preg_replace( '/\(.*\)\//i', '', trim( $this->namespace, '/v1' ) . '_' . $this->rest_base );
+	}
 }
