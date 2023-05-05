@@ -56,16 +56,16 @@
         },
         {
             "name": "hizzle/store",
-            "version": "0.0.9",
+            "version": "0.0.10",
             "source": {
                 "type": "git",
                 "url": "https://github.com/hizzle-co/datastore.git",
-                "reference": "09e8213ef055dade9979aac537c1a975564705ee"
+                "reference": "46e41c305ac2b135d85c31536fc6ef825e8b4dc0"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/hizzle-co/datastore/zipball/09e8213ef055dade9979aac537c1a975564705ee",
-                "reference": "09e8213ef055dade9979aac537c1a975564705ee",
+                "url": "https://api.github.com/repos/hizzle-co/datastore/zipball/46e41c305ac2b135d85c31536fc6ef825e8b4dc0",
+                "reference": "46e41c305ac2b135d85c31536fc6ef825e8b4dc0",
                 "shasum": ""
             },
             "require": {
@@ -98,9 +98,9 @@
             ],
             "support": {
                 "issues": "https://github.com/hizzle-co/datastore/issues",
-                "source": "https://github.com/hizzle-co/datastore/tree/0.0.9"
+                "source": "https://github.com/hizzle-co/datastore/tree/0.0.10"
             },
-            "time": "2022-09-19T05:34:49+00:00"
+            "time": "2023-04-24T15:59:43+00:00"
         }
     ],
     "packages-dev": [],
@@ -113,5 +113,5 @@
         "php": ">=5.3.0"
     },
     "platform-dev": [],
-    "plugin-api-version": "2.2.0"
+    "plugin-api-version": "2.3.0"
 }

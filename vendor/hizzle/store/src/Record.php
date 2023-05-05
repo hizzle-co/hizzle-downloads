@@ -28,6 +28,11 @@ class Record {
 	protected $id = 0;
 
 	/**
+	 * Returns an ID to create the record with.
+	 */
+	public $create_with_id = 0;
+
+	/**
 	 * Core data for this object. Name value pairs (name + default value).
 	 *
 	 * @since 1.0.0
@@ -257,7 +262,18 @@ class Record {
 	 * @return array
 	 */
 	public function get_data() {
-		return array_merge( array( 'id' => $this->get_id() ), $this->data );
+		$data = array( 'id' => $this->get_id() );
+
+		foreach ( array_keys( $this->data ) as $key ) {
+
+			if ( method_exists( $this, "get_{$key}" ) ) {
+				$data[ $key ] = $this->{"get_{$key}"}();
+			} else {
+				$data[ $key ] = $this->get_prop( $key );
+			}
+		}
+
+		return $data;
 	}
 
 	/**

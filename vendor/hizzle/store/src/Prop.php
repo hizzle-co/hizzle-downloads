@@ -118,6 +118,13 @@ class Prop {
     protected $query_schema;
 
 	/**
+	 * Whether the prop is readonly.
+	 *
+	 * @var bool
+	 */
+	public $readonly = false;
+
+	/**
 	 * Class constructor.
 	 *
 	 * @param string $collection The collection's name, including the prefix.
@@ -198,8 +205,9 @@ class Prop {
 			$string .= ' NOT NULL';
 		}
 
-		if ( $this->default || 0 === $this->default ) {
-			$string .= ' DEFAULT ' . ( is_string( $this->default ) ? '\'' . esc_sql( $this->default ) . '\'' : esc_sql( $this->default ) );
+		$default = is_bool( $this->default ) ? (int) $this->default : $this->default;
+		if ( $default || 0 === $default ) {
+			$string .= ' DEFAULT ' . ( is_string( $default  ) ? '\'' . esc_sql( $default  ) . '\'' : esc_sql( $default  ) );
 		}
 
 		if ( $this->extra ) {
@@ -224,28 +232,27 @@ class Prop {
 
 		$schema = array(
 			'description' => $this->description,
-			'readonly'    => 'id' === $this->name,
+			'readonly'    => 'id' === $this->name || $this->readonly,
 			'context'     => array( 'view', 'edit' ),
 		);
 
 		// Value type.
-		if ( $this->is_boolean() ) {
-			$schema['type'] = 'boolean';
+		if ( 'metadata' === $this->name ) {
+			$schema['type'] = array( 'object', 'array' );
+		} elseif ( $this->is_boolean() ) {
+			$schema['type'] = array( 'boolean', 'int' );
 		} elseif ( $this->is_numeric() ) {
 			$schema['type'] = 'integer';
 
 			if ( $this->length ) {
-				$schema['maximum'] = intval( $this->length );
+				$schema['maximum'] = pow( 10, intval( $this->length ) ) - 1;
 			}
 		} elseif ( $this->is_float() ) {
 			$schema['type'] = 'number';
 
 			if ( $this->length ) {
-				$schema['maximum'] = floatval( $this->length );
+				$schema['maximum'] = pow( 10, intval( $this->length ) ) - 1;
 			}
-		} elseif ( $this->is_date() ) {
-			$schema['type']   = 'string';
-			$schema['format'] = 'date-time';
 		} else {
 			$schema['type'] = 'string';
 
@@ -255,8 +262,13 @@ class Prop {
 		}
 
 		// Nullable.
-		if ( $this->nullable ) {
-			$schema['type'] = array( $schema['type'], 'null' );
+		if ( $this->nullable || null !== $this->default ) {
+
+			if ( is_array( $schema['type'] ) ) {
+				$schema['type'][] = 'null';
+			} else {
+				$schema['type'] = array( $schema['type'], 'null' );
+			}
 		} else {
 			$schema['required'] = true;
 		}
@@ -274,7 +286,7 @@ class Prop {
 		}
 
 		// Default value.
-		if ( $this->default || 0 === $this->default ) {
+		if ( null !== $this->default ) {
 			$schema['default'] = $this->default;
 		}
 

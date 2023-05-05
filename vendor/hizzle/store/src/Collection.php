@@ -644,6 +644,10 @@ class Collection {
 
 			$fields['id'] = $post_id;
 			$formats[]    = '%d';
+		} elseif ( ! empty( $record->create_with_id ) ) {
+			$fields['id'] = (int) $record->create_with_id;
+			$formats[]    = '%d';
+			$record->set_id( (int) $record->create_with_id );
 		}
 
 		// Save meta data.
@@ -858,6 +862,7 @@ class Collection {
 		// Fires before deleting a record.
 		do_action( $this->hook_prefix( 'before_delete', true ), $record );
 
+		// Invalidate cache.
 		$this->clear_cache( (object) $record->get_data() );
 
 		// If this is a CPT, delete the post.
@@ -868,7 +873,6 @@ class Collection {
 		// Delete the record from the database.
 		$wpdb->delete( $this->get_db_table_name(), array( 'id' => $record->get_id() ), array( '%d' ) );
 
-		// TODO: invalidate cache.
 		do_action( $this->hook_prefix( 'deleted', true ), $record, $delete_permanently );
 
 		$record->set_id( 0 );
@@ -884,6 +888,15 @@ class Collection {
 		global $wpdb;
 
 		return $wpdb->delete( $this->get_db_table_name(), $where );
+	}
+
+	/**
+	 * Deletes all objects.
+	 */
+	public function delete_all() {
+		global $wpdb;
+
+		$wpdb->query( "TRUNCATE TABLE {$this->get_db_table_name()}" );
 	}
 
 	/**
