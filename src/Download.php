@@ -160,7 +160,7 @@ class Download extends Record {
 	 * @param string $git_url Repo URL.
 	 */
 	public function set_git_url( $git_url ) {
-		$git_url = empty( $git_url ) ? '' : esc_url_raw( strtolower( trailingslashit( $git_url ) ) );
+		$git_url = empty( $git_url ) ? null : esc_url_raw( strtolower( trailingslashit( $git_url ) ) );
 		$this->set_prop( 'git_url', $git_url );
 	}
 

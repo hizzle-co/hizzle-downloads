@@ -33,13 +33,15 @@ return array(
 			),
 
 			'file_url'       => array(
-				'type'        => 'TEXT',
+				'type'        => 'VARCHAR',
+				'length'      => 200,
 				'nullable'    => false,
 				'description' => __( 'The URL of the file.', 'hizzle-downloads' ),
 			),
 
 			'git_url'        => array(
-				'type'        => 'TEXT',
+				'type'        => 'VARCHAR',
+				'length'      => 200,
 				'nullable'    => true,
 				'description' => __( 'The GitHub repo URL.', 'hizzle-downloads' ),
 			),
