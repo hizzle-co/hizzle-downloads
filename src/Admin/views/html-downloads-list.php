@@ -31,7 +31,7 @@
 		?>
 	</p>
 
-	<form id="hizzle-downloads-table" method="GET">
+	<form id="hizzle-downloads-table" method="post">
 		<?php $downloads_table->search_box( __( 'Search Downloads', 'hizzle-downloads' ), 'search' ); ?>
 		<?php $downloads_table->display(); ?>
 	</form>

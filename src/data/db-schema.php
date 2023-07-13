@@ -40,7 +40,7 @@ return array(
 
 			'git_url'        => array(
 				'type'        => 'TEXT',
-				'nullable'    => false,
+				'nullable'    => true,
 				'description' => __( 'The GitHub repo URL.', 'hizzle-downloads' ),
 			),
 
@@ -75,6 +75,7 @@ return array(
 
 		'keys'          => array(
 			'primary' => array( 'id' ),
+			'unique'  => array( 'file_name', 'git_url' ),
 		),
 	),
 
