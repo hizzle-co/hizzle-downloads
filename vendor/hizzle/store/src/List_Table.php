@@ -47,7 +47,7 @@ class List_Table extends \WP_List_Table {
 	 * @var   int
 	 * @since 1.0.0
 	 */
-	public $per_page = 20;
+	public $per_page = 25;
 
 	/**
 	 * Errors
@@ -73,7 +73,7 @@ class List_Table extends \WP_List_Table {
 
 		$this->errors     = new \WP_Error();
 		$this->collection = $collection;
-		$this->per_page   = $this->get_items_per_page( $collection->hook_prefix( 'per_page' ), 20 );
+		$this->per_page   = $this->get_items_per_page( $collection->hook_prefix( 'per_page' ), 25 );
 
 		$this->process_bulk_action();
 
@@ -153,12 +153,28 @@ class List_Table extends \WP_List_Table {
 		);
 
 		foreach ( array_keys( $this->collection->get_props() ) as $prop ) {
-			if ( isset( $_GET[ $this->collection->hook_prefix( $prop ) ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( isset( $_GET[ $this->collection->hook_prefix( $prop ) ] ) && '' !== $_GET[ $this->collection->hook_prefix( $prop ) ] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 				$args[ $prop ] = sanitize_text_field( rawurldecode( $_GET[ $this->collection->hook_prefix( $prop ) ] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			}
 		}
 
 		return $args;
+	}
+
+	/**
+	 * Generates content for a single row of the table
+	 *
+	 * @since 1.2.8
+	 *
+	 * @param \Hizzle\Noptin\DB\Automation_Rule $item The current item.
+	 */
+	public function single_row( $item ) {
+		$class_name = str_replace( '_', '-', $this->collection->hook_prefix( $item->get_id(), true ) );
+
+		echo '<tr class="' . esc_attr( sanitize_html_class( $class_name ) ) . '" data-id="' . absint( $item->get_id() ) . '">';
+		$this->single_row_columns( $item );
+		echo '</tr>';
+
 	}
 
 	/**
@@ -169,32 +185,11 @@ class List_Table extends \WP_List_Table {
 	 */
 	public function column_default( $item, $column_name ) {
 
-		$method = 'get_' . $column_name;
-		if ( is_callable( array( $item, $method ) ) ) {
-			$value = $item->$method();
-
-			if ( is_a( $value, '\Hizzle\Store\Date_Time' ) ) {
-				return $value->context( 'view' );
-			}
-
-			if ( is_null( $value ) || '' === $value ) {
-				return '&mdash;';
-			}
-
-			if ( is_bool( $value ) ) {
-				if ( $value ) {
-					return '<span class="dashicons dashicons-yes" style="color: green"></span>';
-				}
-
-				return '<span class="dashicons dashicons-no" style="color: red"></span>';
-			}
-
-			return wp_kses_post( (string) $value );
-		}
+		// Render value.
+		$value = $item->display_prop( $column_name );
 
 		// Allow plugins to display custom columns.
-		do_action( $this->collection->hook_prefix( "table_$column_name" ), $item );
-
+		return apply_filters( $this->collection->hook_prefix( "table_column_$column_name" ), $value, $item );
 	}
 
 	/**
@@ -287,4 +282,73 @@ class List_Table extends \WP_List_Table {
 
 	}
 
+	/**
+	 * Fetches filters for the table.
+	 *
+	 */
+	protected function get_filters() {
+
+		$filters = array();
+
+		foreach ( $this->collection->get_props() as $prop ) {
+
+			$choices = $prop->get_choices();
+
+			if ( ! empty( $choices ) ) {
+
+				$filters[ $this->collection->hook_prefix( $prop->name ) ] = array_merge(
+					array( '' => $prop->description ),
+					$choices
+				);
+			}
+		}
+
+		return $filters;
+
+	}
+
+	/**
+	 * Extra controls to be displayed between bulk actions and pagination.
+	 *
+	 * @since 1.0.0
+	 *
+	 * @param string $which
+	 */
+	public function extra_tablenav( $which ) {
+
+		$filters = $this->get_filters();
+
+		if ( empty( $filters ) || 'top' !== $which ) {
+			return;
+		}
+
+		$args = array();
+		foreach ( array_keys( $filters ) as $prop ) {
+			if ( isset( $_GET[ $prop ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+				$args[ $prop ] = map_deep( urlencode_deep( $_GET[ $prop ] ), 'sanitize_text_field' ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			} else {
+				$args[ $prop ] = '';
+			}
+		}
+
+		?>
+		<div class="alignleft actions">
+
+			<?php foreach ( $filters as $filter => $options ) : ?>
+				<select name="<?php echo esc_attr( $filter ); ?>" id="<?php echo esc_attr( $this->collection->hook_prefix( $filter ) ); ?>-filter">
+					<?php foreach ( $options as $value => $label ) : ?>
+						<option value="<?php echo esc_attr( $value ); ?>" <?php selected( $args[ $filter ], $value ); ?>><?php echo esc_html( $label ); ?></option>
+					<?php endforeach; ?>
+				</select>
+			<?php endforeach; ?>
+
+			<?php
+				do_action( $this->collection->hook_prefix( 'restrict_manage_records' ), $which, $this );
+				submit_button( __( 'Filter', 'hizzle-store' ), '', 'filter_action', false, array( 'id' => 'post-query-submit' ) );
+			?>
+
+		</div>
+		<?php
+
+	}
 }

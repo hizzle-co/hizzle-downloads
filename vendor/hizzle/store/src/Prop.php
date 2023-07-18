@@ -34,6 +34,13 @@ class Prop {
 	public $name;
 
 	/**
+	 * The prop label.
+	 *
+	 * @var string
+	 */
+	public $label;
+
+	/**
 	 * The prop description.
 	 *
 	 * @var string
@@ -125,6 +132,34 @@ class Prop {
 	public $readonly = false;
 
 	/**
+	 * Whether the prop is saved as a token.
+	 *
+	 * @var bool
+	 */
+	public $is_tokens = false;
+
+	/**
+	 * Whether the prop is saved as a meta key.
+	 *
+	 * @var bool
+	 */
+	public $is_meta_key = false;
+
+	/**
+	 * Whether the meta key supports multiple values.
+	 *
+	 * @var bool
+	 */
+	public $is_meta_key_multiple = false;
+
+	/**
+	 * Dynamic fields are neither saved in the database nor in the meta table.
+	 *
+	 * @var bool
+	 */
+	public $is_dynamic = false;
+
+	/**
 	 * Class constructor.
 	 *
 	 * @param string $collection The collection's name, including the prefix.
@@ -137,6 +172,10 @@ class Prop {
 			if ( property_exists( $this, $key ) ) {
 				$this->$key = $value;
 			}
+		}
+
+		if ( empty( $this->label ) ) {
+			$this->label = ucfirst( str_replace( '_', ' ', $this->name ) );
 		}
 	}
 
@@ -156,7 +195,11 @@ class Prop {
 	 * @return Collection|null
 	 */
 	public function get_collection() {
-		return Collection::instance( $this->collection );
+		try {
+			return Collection::instance( $this->collection );
+		} catch ( Store_Exception $e ) {
+			return null;
+		}
 	}
 
 	/**
@@ -183,6 +226,12 @@ class Prop {
 	 * @return string
 	 */
 	public function get_schema() {
+		global $wpdb;
+
+		// Abort for dynamic and meta key props.
+		if ( $this->is_dynamic || $this->is_meta_key ) {
+			return '';
+		}
 
 		// Retrieve from cache.
         if ( ! empty( $this->schema ) ) {
@@ -191,7 +240,7 @@ class Prop {
 
 		$string = $this->name . ' ' . strtoupper( $this->type );
 
-		if ( $this->length ) {
+		if ( $this->length && ! $this->is_date() ) {
 			$string .= '(' . $this->length . ')';
 		}
 
@@ -207,7 +256,10 @@ class Prop {
 
 		$default = is_bool( $this->default ) ? (int) $this->default : $this->default;
 		if ( $default || 0 === $default ) {
-			$string .= ' DEFAULT ' . ( is_string( $default  ) ? '\'' . esc_sql( $default  ) . '\'' : esc_sql( $default  ) );
+			$string  .= $wpdb->prepare(
+				' DEFAULT %s',
+				maybe_serialize( $default )
+			);
 		}
 
 		if ( $this->extra ) {
@@ -239,6 +291,8 @@ class Prop {
 		// Value type.
 		if ( 'metadata' === $this->name ) {
 			$schema['type'] = array( 'object', 'array' );
+		} elseif( $this->is_meta_key ) {
+			$schema['type'] = $this->is_meta_key_multiple ? 'array' : 'string';
 		} elseif ( $this->is_boolean() ) {
 			$schema['type'] = array( 'boolean', 'int' );
 		} elseif ( $this->is_numeric() ) {
@@ -262,7 +316,7 @@ class Prop {
 		}
 
 		// Nullable.
-		if ( $this->nullable || null !== $this->default ) {
+		if ( $this->nullable || null !== $this->default || $this->is_meta_key || $this->is_dynamic ) {
 
 			if ( is_array( $schema['type'] ) ) {
 				$schema['type'][] = 'null';
@@ -271,11 +325,6 @@ class Prop {
 			}
 		} else {
 			$schema['required'] = true;
-		}
-
-		// Enum.
-		if ( ! empty( $this->enum ) ) {
-			$schema['enum'] = is_string( $this->enum ) ? call_user_func( $this->enum ) : $this->enum;
 		}
 
 		// Sanitize callback.
@@ -287,7 +336,7 @@ class Prop {
 
 		// Default value.
 		if ( null !== $this->default ) {
-			$schema['default'] = $this->default;
+			$schema['default'] = $this->is_boolean() ? (bool) $this->default : $this->default;
 		}
 
 		// Extra REST schema.
@@ -306,6 +355,11 @@ class Prop {
 	 */
 	public function get_query_schema() {
 
+		// Abort for dynamic props.
+		if ( $this->is_dynamic ) {
+			return array();
+		}
+
 		// Retrieve from cache.
         if ( ! empty( $this->query_schema ) ) {
             return $this->query_schema;
@@ -314,50 +368,56 @@ class Prop {
 		$rest_schema  = $this->get_rest_schema();
 		$query_schema = array();
 
+		// Has the value.
 		$query_schema[ $this->name ] = array(
 			'description'       => sprintf(
 				// translators: Placeholder %s is the property name.
 				__( 'Limit response to resources where %s has the provided value.', 'hizzle-store' ),
 				$this->name
 			),
-			'type'              => array_merge( array( 'array' ), (array) $rest_schema['type'] ),
-			'items'             => array(
-				'type' => $rest_schema['type'],
-			),
+			'type'              => array_unique( array_merge( (array) $rest_schema['type'], array( 'array' ) ) ),
 			'validate_callback' => 'rest_validate_request_arg',
 		);
-
-		if ( isset( $rest_schema['enum'] ) ) {
-			$query_schema[ $this->name ]['default'] = 'any';
-			$query_schema[ $this->name ]['enum']    = array_merge( array( 'any' ), $rest_schema['enum'] );
-		}
 
 		if ( isset( $rest_schema['format'] ) ) {
 			$query_schema[ $this->name ]['format'] = $rest_schema['format'];
 		}
 
+		// Does not have the value.
+		$query_schema[ "{$this->name}_not" ] = array(
+			'description'       => sprintf(
+				// translators: Placeholder %s is the property name.
+				__( 'Limit response to resources where %s does not have the provided value.', 'hizzle-store' ),
+				$this->name
+			),
+			'type'              => array_unique( array_merge( (array) $rest_schema['type'], array( 'array' ) ) ),
+			'validate_callback' => 'rest_validate_request_arg',
+		);
+
+		if ( isset( $rest_schema['format'] ) ) {
+			$query_schema[ "{$this->name}_not" ]['format'] = $rest_schema['format'];
+		}
+
 		// Dates.
-		if ( $this->is_date() ) {
+		if ( $this->is_date() && ! $this->is_meta_key ) {
 
 			$query_schema[ "{$this->name}_before" ] = array(
 				'description'       => sprintf(
 					// translators: Placeholder %s is the property name.
-					__( 'Limit response to resources where %s is before a given ISO8601 compliant date.', 'hizzle-store' ),
+					__( 'Limit response to resources where %s is before a given strtotime compatible date.', 'hizzle-store' ),
 					$this->name
 				),
 				'type'              => 'string',
-				'format'            => 'date-time',
 				'validate_callback' => 'rest_validate_request_arg',
 			);
 
 			$query_schema[ "{$this->name}_after" ] = array(
 				'description'       => sprintf(
 					// translators: Placeholder %s is the property name.
-					__( 'Limit response to resources where %s is after a given ISO8601 compliant date.', 'hizzle-store' ),
+					__( 'Limit response to resources where %s is after a given strtotime compatible date.', 'hizzle-store' ),
 					$this->name
 				),
 				'type'              => 'string',
-				'format'            => 'date-time',
 				'validate_callback' => 'rest_validate_request_arg',
 			);
 
@@ -370,7 +430,7 @@ class Prop {
 		}
 
 		// Numbers & Floats.
-		if ( $this->is_float() ) {
+		if ( $this->is_float() && ! $this->is_meta_key ) {
 
 			$query_schema[ "{$this->name}_min" ] = array(
 				'description'       => sprintf(
@@ -445,7 +505,7 @@ class Prop {
 	 */
 	public function get_data_type() {
 
-		if ( $this->is_numeric() ) {
+		if ( $this->is_numeric() || $this->is_boolean() ) {
 			return '%d';
 		}
 
@@ -456,4 +516,81 @@ class Prop {
 		return '%s';
 	}
 
+	/**
+	 * Sanitizes the property value.
+	 *
+	 * @param mixed $value The value to sanitize.
+	 * @return mixed
+	 */
+	public function sanitize( $value ) {
+
+		// Abort if value is null.
+		if ( null === $value ) {
+			return $value;
+		}
+
+		// Do we have a custom callback?
+		if ( ! empty( $this->sanitize_callback ) ) {
+			return call_user_func( $this->sanitize_callback, $value );
+		}
+
+		// Abort if not scalar.
+		if ( ! is_scalar( $value ) || null === $value ) {
+			return $value;
+		}
+
+		if ( $this->is_boolean() ) {
+
+			if ( 'yes' === $value || 'true' === $value || '1' === $value ) {
+				return true;
+			}
+
+			if ( 'no' === $value || 'false' === $value || '0' === $value ) {
+				return false;
+			}
+
+			return (bool) $value;
+		}
+
+		if ( $this->is_numeric() ) {
+			return (int) $value;
+		}
+
+		if ( $this->is_float() ) {
+			return (float) $value;
+		}
+
+		if ( $this->is_date() ) {
+			return gmdate( 'Y-m-d H:i:s', strtotime( $value ) );
+		}
+
+		// Var chars.
+		if ( 'varchar' === strtolower( $this->type ) ) {
+			return sanitize_text_field( $value );
+		}
+
+		return sanitize_textarea_field( $value );
+	}
+
+	/**
+	 * Retrieves available choices.
+	 *
+	 * @return array
+	 */
+	public function get_choices() {
+
+		// Booleans.
+		if ( $this->is_boolean() ) {
+			return array(
+				'yes' => __( 'Yes', 'hizzle-store' ),
+				'no'  => __( 'No', 'hizzle-store' ),
+			);
+		}
+
+		if ( empty( $this->enum ) ) {
+			return array();
+		}
+
+		return is_callable( $this->enum ) ? call_user_func( $this->enum ) : $this->enum;
+	}
 }
