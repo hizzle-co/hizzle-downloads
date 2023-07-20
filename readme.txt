@@ -4,8 +4,8 @@ Tags: files, downloads, digital downloads
 Requires at least: 4.9
 Tested up to: 6.2
 Requires PHP: 5.6
-Version: 1.0.7
-Stable tag: 1.0.7
+Version: 1.0.8
+Stable tag: 1.0.8
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Donate link: https://noptin.com/products/?utm_source=wp-repo&utm_medium=donate&utm_campaign=readme
@@ -63,6 +63,9 @@ There are a lot of ways to contribute to this plugin:-
 Yeah. The downloads list will take your theme's default styling.
 
 == Changelog ==
+
+= 1.0.8 =
+- Update composer packages.
 
 = 1.0.7 =
 - Update composer packages.
