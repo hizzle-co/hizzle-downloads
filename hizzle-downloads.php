@@ -25,7 +25,7 @@ if ( ! defined( 'HIZZLE_DOWNLOADS_VERSION' ) ) {
 }
 
 if ( ! defined( 'HIZZLE_DOWNLOADS_DB_VERSION' ) ) {
-	define( 'HIZZLE_DOWNLOADS_DB_VERSION', 2 );
+	define( 'HIZZLE_DOWNLOADS_DB_VERSION', 3 );
 }
 
 // Include the auto loader.
