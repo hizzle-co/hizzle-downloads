@@ -160,6 +160,13 @@ class Prop {
 	public $is_dynamic = false;
 
 	/**
+	 * JS table props.
+	 *
+	 * @var object
+	 */
+	public $js_props = array();
+
+	/**
 	 * Class constructor.
 	 *
 	 * @param string $collection The collection's name, including the prefix.
@@ -177,6 +184,8 @@ class Prop {
 		if ( empty( $this->label ) ) {
 			$this->label = ucfirst( str_replace( '_', ' ', $this->name ) );
 		}
+
+		$this->js_props = (object) $this->js_props;
 	}
 
 	/**
@@ -517,6 +526,43 @@ class Prop {
 	}
 
 	/**
+	 * Flips the property value.
+	 *
+	 * @param string|string[] $value The value to flip.
+	 * @param array $choices The available choices.
+	 * @return mixed
+	 */
+	public function flip_option( $value, $choices ) {
+
+		if ( is_string( $value ) ) {
+
+			if ( isset( $choices[ $value ] ) ) {
+				return $value;
+			}
+
+			foreach ( $choices as $key => $val ) {
+				if ( $val === $value ) {
+					return $key;
+				}
+			}
+
+			return $value;
+		}
+
+		if ( ! wp_is_numeric_array( $value ) ) {
+			return $value;
+		}
+
+		$flipped = array();
+
+		foreach ( $value as $key => $val ) {
+			$flipped[ $key ] = $this->flip_option( $val, $choices );
+		}
+
+		return $flipped;
+	}
+
+	/**
 	 * Sanitizes the property value.
 	 *
 	 * @param mixed $value The value to sanitize.
@@ -527,6 +573,12 @@ class Prop {
 		// Abort if value is null.
 		if ( null === $value ) {
 			return $value;
+		}
+
+		// If we have enums and a label has been passed instead of a key.
+		if ( ! empty( $this->enum ) ) {
+			$choices = $this->get_choices();
+			$value   = $this->flip_option( $value, $choices );
 		}
 
 		// Do we have a custom callback?
