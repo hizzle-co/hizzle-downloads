@@ -44,6 +44,7 @@ class REST {
 
 		// GitHub updater.
 		if ( hizzle_downloads_using_github_updater() ) {
+			add_filter( 'hizzle_logger_admin_show_menu', '__return_true' );
 			$this->controllers['github_updater'] = new GitHub_Updater( $store->get_namespace() );
 		}
 

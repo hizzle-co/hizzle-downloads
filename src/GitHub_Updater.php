@@ -39,6 +39,9 @@ class GitHub_Updater {
 
 		// Register rest routes.
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
+
+		// Background updates.
+		add_action( 'hizzle_downloads_process_github_release', array( $this, 'process_bg_release' ), 10, 2 );
 	}
 
 	/**
@@ -145,9 +148,14 @@ class GitHub_Updater {
 			return rest_ensure_response( array( 'message' => 'Unsupported release action.' ) );
 		}
 
-		// Process the release.
-		return rest_ensure_response( $this->process_release( $request['release'], $request['repository']['full_name'] ) );
+		// Process the release in the background to allow for release assets to be uploaded first.
+		if ( function_exists( 'schedule_noptin_background_action' ) ) {
+			$result = schedule_noptin_background_action( time() + 10, 'hizzle_downloads_process_github_release', $request['repository']['full_name'] );
+		} else {
+			$result = wp_schedule_single_event( time() + 10, 'hizzle_downloads_process_github_release', array( $request['repository']['full_name'] ) );
+		}
 
+		return rest_ensure_response( $result );
     }
 
 	/**
@@ -161,6 +169,28 @@ class GitHub_Updater {
 		}
 
 		return true;
+	}
+
+	/**
+	 * Processes a GitHub release in the background.
+	 *
+	 * @param object $release
+	 * @param string $repo
+	 */
+	public function process_bg_release( $repo ) {
+		$release = $this->get_release( "https://api.github.com/repos/$repo/releases/latest" );
+
+		// Ensure that it was successful.
+		if ( is_wp_error( $release ) ) {
+			hizzle_downloads()->logger->error( $release->get_error_message(), 'hizzle_downloads' );
+			return;
+		}
+
+		$result = $this->process_release( $release, $repo );
+
+		if ( is_wp_error( $result ) ) {
+			hizzle_downloads()->logger->error( $result->get_error_message(), 'hizzle_downloads' );
+		}
 	}
 
 	/**
@@ -227,6 +257,7 @@ class GitHub_Updater {
 		// Prepare the data to use.
 		$_repo = explode( '/', $repo );
 		$data  = array(
+			'assets_url'  => $release->assets_url,
 			'zipball_url' => $release->zipball_url,
 			'tag_name'    => $release->tag_name,
 			'body'        => $release->body,
@@ -314,7 +345,7 @@ class GitHub_Updater {
 
 		// Prepare release details.
 		if ( ! empty( $release['assets'] ) ) {
-			$processed = $this->process_release_asset( $release, (object) $release['assets'][0], $dir_url, $dir_path );
+			$processed = $this->process_release_asset( (object) $release['assets'][0], $dir_url, $dir_path );
 
 			if ( $processed ) {
 				return $processed;
@@ -328,13 +359,12 @@ class GitHub_Updater {
 	/**
 	 * Processes a normal release asset.
 	 *
-	 * @param array $release
 	 * @param object $asset
 	 * @param string $dir_url
 	 * @param string $dir_path
 	 * @return array|false asset details or false on error.
 	 */
-	protected function process_release_asset( $release, $asset, $dir_url, $dir_path ) {
+	protected function process_release_asset( $asset, $dir_url, $dir_path ) {
 
 		// Ensure that the extension is allowed.
 		$wp_filetype = wp_check_filetype( $asset->name );
@@ -344,7 +374,14 @@ class GitHub_Updater {
 		}
 
 		// Download the asset.
-		$file_data = $this->get( $asset->browser_download_url );
+		$file_data = $this->get(
+			$asset->url,
+			array(
+				'headers' => array(
+					'Accept' => 'application/octet-stream',
+				),
+			)
+		);
 
 		if ( is_wp_error( $file_data ) ) {
 			hizzle_downloads()->logger->error( $file_data->get_error_message() . ' when fetching ' . $asset->browser_download_url, 'hizzle_downloads' );
@@ -361,18 +398,20 @@ class GitHub_Updater {
 		// Prepare args.
 		$extension = strtolower( $wp_filetype['ext'] );
 		$filename  = str_replace( '.' . $extension, '', strtolower( $asset->name ) );
-		$prefixed  = $filename . '-' . $release['tag_name'] . '.' . $extension;
-		$unique    = wp_unique_filename( $dir_path, $prefixed );
 
 		// Copy the file to the upload dir.
-		Installer::create_file( $dir_path . '/' . $unique, $file_data );
+		Installer::create_file(
+			$dir_path . '/' . strtolower( $asset->name ),
+			$file_data
+		);
 
 		// Return the new file URL.
 		return array(
-			'file_path'        => $dir_path . '/' . $unique,
-			'file_url'         => $dir_url . '/' . $unique,
+			'file_path'        => $dir_path . '/' . strtolower( $asset->name ),
+			'file_url'         => $dir_url . '/' . strtolower( $asset->name ),
 			'root_folder_name' => $filename,
 			'is_zip'           => 'zip' === $extension,
+			'is_asset'         => true,
 		);
 
 	}
@@ -389,10 +428,10 @@ class GitHub_Updater {
 
 		// Prepare args.
 		$download_url = 'https://github.com/' . $release['repo']['full_name'] . '/archive/' . $release['tag_name'] . '.zip';
-		$extension    = 'zip';
 		$filename     = $release['repo']['name'] . '-' . $release['tag_name'];
-		$prefixed     = $filename . '.' . $extension;
-		$unique       = wp_unique_filename( $dir_path, $prefixed );
+		$alt_name     = $release['repo']['name'] . '-' . str_replace( 'v', '', $release['tag_name'] );
+		$repo_name    = $release['repo']['name'];
+		$zip_path     = $dir_path . '/' . $repo_name . '.zip';
 
 		// Download the source code.
 		$file_data = $this->get( $download_url );
@@ -410,37 +449,44 @@ class GitHub_Updater {
 		}
 
 		// Copy the file to the upload dir.
-		Installer::create_file( $dir_path . '/' . $unique, $file_data );
+		Installer::create_file( $zip_path, $file_data );
 
 		// Rename the root folder to $release['repo']['name'].
 		if ( class_exists( 'ZipArchive' ) ) {
 
 			$zip = new \ZipArchive();
-			$res = $zip->open( $dir_path . '/' . $unique );
+			$res = $zip->open( $zip_path );
 			if ( true === $res ) {
 
 				// Rename the root folder.
+				$changed = false;
 				for ( $i = 0; $i < $zip->numFiles; $i++ ) {
 					$item_name = $zip->getNameIndex( $i );
 
 					// Check if the file starts with the release tag name.
 					if ( 0 === strpos( $item_name, $filename ) ) {
-						$zip->renameIndex( $i, substr_replace( $item_name, $release['repo']['name'], 0, strlen( $filename ) ) );
+						$zip->renameIndex( $i, substr_replace( $item_name, $repo_name, 0, strlen( $filename ) ) );
+						$changed = true;
+					} elseif ( 0 === strpos( $item_name, $alt_name ) ) {
+						$zip->renameIndex( $i, substr_replace( $item_name, $repo_name, 0, strlen( $alt_name ) ) );
+						$changed = true;
 					}
 				}
 
 				$zip->close();
 
-				$filename = $release['repo']['name'];
+				if ( $changed ) {
+					$filename = $repo_name;
+				}
 			}
 		}
 
 		// Return the new file URL.
 		return array(
-			'file_path'        => $dir_path . '/' . $unique,
-			'file_url'         => $dir_url . '/' . $unique,
+			'file_path'        => $zip_path,
+			'file_url'         => $dir_url . '/' . $repo_name . '.zip',
 			'root_folder_name' => $filename,
-			'is_zip'           => 'zip' === $extension,
+			'is_zip'           => true,
 		);
 
 	}
@@ -513,5 +559,4 @@ class GitHub_Updater {
 		$args['headers']['Authorization'] = 'Bearer ' . HIZZLE_DOWNLOADS_GITHUB_ACCESS_TOKEN;
 		return $args;
 	}
-
 }
