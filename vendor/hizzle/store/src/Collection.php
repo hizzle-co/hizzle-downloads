@@ -126,6 +126,13 @@ class Collection {
 	public $labels = array();
 
 	/**
+	 * Extra settings.
+	 *
+	 * @var array
+	 */
+	public $settings = array();
+
+	/**
 	 * A list of class instances
 	 *
 	 * @var Collection[]
@@ -180,7 +187,7 @@ class Collection {
 	public static function instance( $name ) {
 
 		if ( ! isset( self::$instances[ $name ] ) ) {
-			throw new Store_Exception( 'missing_collection', wp_sprintf( 'Collection %s not found.', $name ) );
+			throw new Store_Exception( 'missing_collection', wp_sprintf( 'Collection %s not found.', esc_html( $name ) ) );
 		}
 
 		return self::$instances[ $name ];
@@ -587,7 +594,7 @@ class Collection {
 			'default'           => 25,
 			'minimum'           => -1,
 			'maximum'           => 100,
-			'sanitize_callback' => 'absint',
+			'sanitize_callback' => __CLASS__ . '::intval',
 			'validate_callback' => 'rest_validate_request_arg',
 		);
 
@@ -665,6 +672,10 @@ class Collection {
 
 		$this->query_schema = apply_filters( $this->hook_prefix( 'query_schema' ), $query_schema, $this );
 		return $this->query_schema;
+	}
+
+	public static function intval( $value ) {
+		return intval( $value );
 	}
 
 	/**
@@ -960,7 +971,7 @@ class Collection {
 
 		// Abort if the post was not created.
 		if ( is_wp_error( $post_id ) ) {
-			throw new Store_Exception( $post_id->get_error_code(), $post_id->get_error_message() );
+			throw new Store_Exception( esc_html( $post_id->get_error_code() ), esc_html( $post_id->get_error_message() ) );
 		}
 
 		if ( empty( $post_id ) ) {
@@ -1551,7 +1562,7 @@ class Collection {
 			)
 		);
 
-		throw new Store_Exception( $this->hook_prefix( 'not_found', true ), $message, 404 );
+		throw new Store_Exception( esc_html( $this->hook_prefix( 'not_found', true ) ), esc_html( $message ), 404 );
 	}
 
 	/**
@@ -1574,7 +1585,7 @@ class Collection {
 			)
 		);
 
-		throw new Store_Exception( $this->hook_prefix( 'not_saved', true ), $message, 404 );
+		throw new Store_Exception( esc_html( $this->hook_prefix( 'not_saved', true ) ), esc_html( $message ), 404 );
 	}
 
 	/**
