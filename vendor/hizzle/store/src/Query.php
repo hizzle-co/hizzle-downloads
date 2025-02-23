@@ -307,12 +307,52 @@ class Query {
 		// Prepare aggregate fields.
 		foreach ( $aggregate_fields as $field => $function ) {
 
+			// Handle CASE expressions
+			if ( is_array( $function ) && isset( $function['case'] ) ) {
+				$case_field = $this->prefix_field( esc_sql( sanitize_key( $function['case']['field'] ) ) );
+				if ( empty( $case_field ) ) {
+					throw new Store_Exception( 'query_invalid_field', 'Invalid case field.' );
+				}
+
+				$case_sql = "CASE $case_field";
+				foreach ( $function['case']['when'] as $when => $then ) {
+					$when     = esc_sql( $when );
+					$then_sql = $this->prepare_case_then( $then );
+					$case_sql .= " WHEN '$when' THEN $then_sql";
+				}
+
+				if ( isset( $function['case']['else'] ) ) {
+					$else_sql = $this->prepare_case_then( $function['case']['else'] );
+					$case_sql .= " ELSE $else_sql";
+				}
+
+				$case_sql .= " END";
+
+				// Handle optional aggregate function wrapper
+				if ( isset( $function['function'] ) ) {
+					$agg_function = strtoupper( $function['function'] );
+					if ( ! in_array( $agg_function, array( 'AVG', 'COUNT', 'MAX', 'MIN', 'SUM' ), true ) ) {
+						throw new Store_Exception( 'query_invalid_function', 'Invalid aggregate function.' );
+					}
+					$case_sql = "$agg_function($case_sql)";
+				}
+
+				// Handle optional math operations
+				if ( isset( $function['math'] ) ) {
+					$math_op = $this->prepare_math_expression( $function['math'] );
+					$case_sql = "($case_sql $math_op)";
+				}
+
+				$this->query_fields[] = "$case_sql AS " . esc_sql( $field );
+				continue;
+			}
+
 			// Ensure the field is supported.
 			$field       = esc_sql( sanitize_key( $field ) );
 			$table_field = $this->prefix_field( $field );
 
 			if ( empty( $table_field ) ) {
-				throw new Store_Exception( 'query_invalid_field', __( 'Invalid aggregate field.', 'hizzle-store' ) );
+				throw new Store_Exception( 'query_invalid_field', 'Invalid aggregate field.' );
 			}
 
 			foreach ( wp_parse_list( $function ) as $function ) {
@@ -320,7 +360,7 @@ class Query {
 				// Ensure the function is supported.
 				$function_upper = strtoupper( $function );
 				if ( ! in_array( $function_upper, array( 'AVG', 'COUNT', 'MAX', 'MIN', 'SUM' ), true ) ) {
-					throw new Store_Exception( 'query_invalid_function', __( 'Invalid aggregate function.', 'hizzle-store' ) );
+					throw new Store_Exception( 'query_invalid_function', 'Invalid aggregate function.' );
 				}
 
 				$function             = strtolower( $function );
@@ -344,7 +384,7 @@ class Query {
 				$field       = esc_sql( sanitize_key( $field ) );
 				$table_field = $this->prefix_field( $field );
 				if ( empty( $table_field ) ) {
-					throw new Store_Exception( 'query_invalid_field', __( 'Invalid group by field.', 'hizzle-store' ) );
+					throw new Store_Exception( 'query_invalid_field', 'Invalid group by field.' );
 				}
 
 				// Handle casting and timezone conversion
@@ -386,7 +426,7 @@ class Query {
 				// Ensure the field is supported.
 				$field = $this->prefix_field( esc_sql( sanitize_key( $field ) ) );
 				if ( empty( $field ) ) {
-					throw new Store_Exception( 'query_invalid_field', __( 'Invalid extra field.', 'hizzle-store' ) );
+					throw new Store_Exception( 'query_invalid_field', 'Invalid extra field.' );
 				}
 
 				$this->query_fields[] = $field;
@@ -395,10 +435,84 @@ class Query {
 
 		// Abort if no fields were aggregated.
 		if ( empty( $this->query_fields ) ) {
-			throw new Store_Exception( 'query_missing_aggregate_fields', __( 'Missing aggregate fields.', 'hizzle-store' ) );
+			throw new Store_Exception( 'query_missing_aggregate_fields', 'Missing aggregate fields.' );
 		}
 
-		$this->query_fields = implode( ', ', array_unique( $this->query_fields ) );
+		$this->query_fields = implode( ', ', array_unique( (array) $this->query_fields ) );
+	}
+
+	/**
+	 * Prepares the THEN/ELSE part of a CASE expression
+	 *
+	 * @param array $then The THEN configuration
+	 * @return string
+	 */
+	protected function prepare_case_then( $then ) {
+		if ( ! is_array( $then ) ) {
+			return esc_sql( (float) $then );
+		}
+
+		$field = $this->prefix_field( esc_sql( sanitize_key( $then['field'] ) ) );
+		if ( empty( $field ) ) {
+			throw new Store_Exception( 'query_invalid_field', 'Invalid field in CASE expression.' );
+		}
+
+		if ( empty( $then['value'] ) ) {
+			return $field;
+		}
+
+		// Split the math expression into parts
+		$expression = $this->prepare_math_expression( $then['value'], $field );
+		return "($expression)";
+	}
+
+	/**
+	 * Prepares a math expression string
+	 *
+	 * @param string $expression The math expression with placeholders
+	 * @param string $field The field name to use in place of {field}
+	 * @return string
+	 */
+	protected function prepare_math_expression( $expression, $field = '' ) {
+		// Replace {field} with the actual field name if provided.
+		if ( ! empty( $field ) ) {
+			$expression = str_replace( '{field}', $field, $expression );
+		}
+
+		// Split the expression into parts.
+		$parts = preg_split( '/([+\-*\/])/', $expression, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY );
+
+		// Process each part.
+		$processed_parts = array();
+		foreach ( $parts as $part ) {
+			$part = trim( $part );
+
+			// If it's an operator, add it directly
+			if ( in_array( $part, array( '+', '-', '*', '/' ), true ) ) {
+				$processed_parts[] = $part;
+				continue;
+			}
+
+			// Numbers.
+			if ( is_numeric( $part ) ) {
+				$processed_parts[] = esc_sql( (float) $part );
+				continue;
+			}
+
+			// If it's a field reference, prefix it
+			$prefixed_field = $this->prefix_field( esc_sql( sanitize_key( $part ) ) );
+
+			if ( empty( $prefixed_field ) ) {
+				throw new Store_Exception( 'query_invalid_field', 'Invalid field in math expression.' );
+			}
+
+			if ( ! empty( $prefixed_field ) ) {
+				$processed_parts[] = $prefixed_field;
+				continue;
+			}
+		}
+
+		return implode( ' ', $processed_parts );
 	}
 
 	/**
