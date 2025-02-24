@@ -3,7 +3,7 @@
  * Plugin Name: Hizzle Downloads
  * Plugin URI: https://hizzle.co/download-manager/
  * Description: A lightweight download manager plugin.
- * Version: 1.1.1
+ * Version: 1.2.0
  * Author: Hizzle
  * Author URI: https://hizzle.co
  * Text Domain: hizzle-downloads
@@ -21,7 +21,7 @@ if ( ! defined( 'HIZZLE_DOWNLOADS_PLUGIN_FILE' ) ) {
 }
 
 if ( ! defined( 'HIZZLE_DOWNLOADS_VERSION' ) ) {
-	define( 'HIZZLE_DOWNLOADS_VERSION', '1.1.1' );
+	define( 'HIZZLE_DOWNLOADS_VERSION', '1.2.0' );
 }
 
 if ( ! defined( 'HIZZLE_DOWNLOADS_DB_VERSION' ) ) {
