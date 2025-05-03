@@ -1,13 +1,13 @@
 <?php
 
-namespace Hizzle\Store;
-
 /**
  * Store API: Handles CRUD operations on a single collection of data.
  *
  * @since   1.0.0
  * @package Hizzle\Store
  */
+
+namespace Hizzle\Store;
 
 // Exit if accessed directly.
 defined( 'ABSPATH' ) || exit;
@@ -95,7 +95,7 @@ class Collection {
 	 *
 	 * @var array
 	 */
-	public $keys;
+	public $keys = array();
 
 	/**
 	 * The database schema.
@@ -142,15 +142,14 @@ class Collection {
 	/**
 	 * Class constructor.
 	 *
-	 * @param string $namespace Namespace of this store's instance.
+	 * @param string $store_namespace Namespace of this store's instance.
 	 * @param array  $data An array of relevant data.
 	 */
-	public function __construct( $namespace, $data ) {
+	public function __construct( $store_namespace, $data ) {
 		global $wpdb;
 
 		// Set namespace.
-		$this->capabillity = function_exists( 'get_noptin_capability' ) ? get_noptin_capability() : 'manage_options';
-		$this->namespace   = $namespace;
+		$this->namespace = $store_namespace;
 
 		// Set collection data.
 		foreach ( apply_filters( $this->hook_prefix( 'collection_data' ), $data ) as $key => $value ) {
@@ -172,6 +171,9 @@ class Collection {
 			$meta_type          = $this->get_meta_type() . 'meta';
 			$wpdb->{$meta_type} = $this->get_meta_table_name();
 		}
+
+		do_action( $this->hook_prefix( 'collection_registered' ), $this );
+		do_action( "{$store_namespace}_collection_registered", $this );
 
 		// Register the collection.
 		self::$instances[ $this->get_full_name() ] = $this;
@@ -563,7 +565,7 @@ class Collection {
 			}
 		}
 
-		$schema['properties'][ $prop->name ] = array_filter( $schema['properties'][ $prop->name ] );
+		$schema['properties'] = array_filter( $schema['properties'] );
 
 		$this->rest_schema = apply_filters( $this->hook_prefix( 'rest_schema' ), $schema, $this );
 		return $this->rest_schema;
@@ -649,7 +651,7 @@ class Collection {
 			}
 		}
 
-		$query_schema['order']           = array(
+		$query_schema['order'] = array(
 			'description'       => __( 'Order sort attribute ascending or descending.', 'hizzle-store' ),
 			'type'              => 'string',
 			'default'           => 'desc',
@@ -659,7 +661,7 @@ class Collection {
 
 		$all_fields = $this->get_known_fields();
 
-		$query_schema['orderby']         = array(
+		$query_schema['orderby'] = array(
 			'description'       => __( 'Sort collection by object attribute.', 'hizzle-store' ),
 			'type'              => 'string',
 			'default'           => 'id',
