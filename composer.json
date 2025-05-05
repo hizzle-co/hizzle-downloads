@@ -21,6 +21,9 @@
     "autoload": {
         "psr-4": {
             "Hizzle\\Downloads\\": "src/"
-        }
+        },
+        "files": [
+            "src/functions.php"
+        ]
     }
 }

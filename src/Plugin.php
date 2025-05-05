@@ -92,33 +92,10 @@ class Plugin {
 	/**
 	 * Class Constructor.
 	 */
-	public function __construct() {
-		$this->includes();
-		$this->init_hooks();
-	}
-
-	/**
-	 * Include required core files used in admin and on the frontend.
-	 */
-	public function includes() {
-		$includes = plugin_dir_path( __FILE__ );
-
-		// Functions.
-		require_once $includes . 'functions.php';
-
-	}
-
-	/**
-	 * Hook into actions and filters.
-	 *
-	 * @since 1.0.0
-	 */
-	private function init_hooks() {
-
+	private function __construct() {
 		add_action( 'plugins_loaded', array( $this, 'on_plugins_loaded' ), -1 );
 		add_action( 'init', array( $this, 'init' ), 0 );
 		add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue_gutenberg_assets' ) );
-
 	}
 
 	/**
