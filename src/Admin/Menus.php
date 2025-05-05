@@ -24,7 +24,6 @@ class Menus {
 		add_action( 'admin_menu', array( $this, 'settings_menu' ), 25 );
 
 		add_filter( 'set-screen-option', array( $this, 'set_screen_option' ), 10, 3 );
-
 	}
 
 	/**

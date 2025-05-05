@@ -93,23 +93,20 @@ class Plugin {
 	 * Class Constructor.
 	 */
 	private function __construct() {
-		add_action( 'plugins_loaded', array( $this, 'on_plugins_loaded' ), -1 );
 		add_action( 'init', array( $this, 'init' ), 0 );
 		add_action( 'enqueue_block_editor_assets', array( $this, 'enqueue_gutenberg_assets' ) );
 	}
 
 	/**
-	 * When WP has loaded all plugins, trigger the `hizzle_downloads_loaded` hook.
-	 *
-	 * @since 1.0.0
+	 * Init after WordPress inits.
 	 */
-	public function on_plugins_loaded() {
+	public function init() {
 
-		do_action( 'hizzle_downloads_before_load' );
+		// Before init action.
+		do_action( 'before_hizzle_downloads_init' );
 
-		if ( is_admin() ) {
-			$this->admin = new Admin\Admin();
-		}
+		// Set up localisation.
+		$this->load_plugin_textdomain();
 
 		// Init the data store.
 		$this->store = new Store( 'hizzle_download', apply_filters( 'hizzle_downloads_database_schema', hizzle_downloads_get_data( 'db-schema' ) ) );
@@ -124,25 +121,16 @@ class Plugin {
 		// Logger.
 		$this->logger = apply_filters( 'hizzle_downloads_logger', \Hizzle\Logger\Logger::get_instance() );
 
+		// Admin.
+		if ( is_admin() ) {
+			$this->admin = new Admin\Admin();
+		}
+
 		// Download handler.
 		$this->handler = new Download_Handler();
 
 		// Maybe install.
 		Installer::init();
-
-		do_action( 'hizzle_downloads_loaded' );
-	}
-
-	/**
-	 * Init after WordPress inits.
-	 */
-	public function init() {
-
-		// Before init action.
-		do_action( 'before_hizzle_downloads_init' );
-
-		// Set up localisation.
-		$this->load_plugin_textdomain();
 
 		// Register block.
 		$this->register_block_type();
@@ -179,7 +167,6 @@ class Plugin {
 
 		// Fire post-registration hook.
 		do_action( 'after_register_hizzle_downloads_block_type', $this );
-
 	}
 
 	/**
@@ -297,5 +284,4 @@ class Plugin {
 	public function plugin_path() {
 		return untrailingslashit( plugin_dir_path( HIZZLE_DOWNLOADS_PLUGIN_FILE ) );
 	}
-
 }
