@@ -1,6 +1,6 @@
 === Simple Download Manager - Hizzle Downloads ===
 Contributors: picocodes, mutendebrian
-Tags: files, downloads, digital downloads
+Tags: files, downloads, digital downloads, download manager, restrict downloads
 Requires at least: 4.9
 Tested up to: 6.7
 Requires PHP: 5.6
@@ -10,19 +10,50 @@ License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Donate link: https://noptin.com/products/?utm_source=wp-repo&utm_medium=donate&utm_campaign=readme
 
-Allow your website visitors to download files from your site. Optionally restrict downloads by user role, ip address, etc
+Easily add, restrict, and track digital downloads in WordPress — protect files with passwords, user roles, IPs, or subscriber access.
 
 == Description ==
 
-This plugin allows you to:-
+**A simple WordPress download manager for secure file sharing, access control, and download tracking — perfect for digital products.**
+★★★★★<br>
 
-- Add unlimited downloadable files.
-- Optionally protect each downloadable file with a password.
-- Restrict downloads to specific user roles.
-- Restrict downloads to specific ip addresses.
-- Restrict downloads to specific users.
-- Restrict downloads to newsletter subscribers.
-- Track file downloads.
+Do you need a simple yet powerful way to manage file downloads on your WordPress site? This plugin makes it easy to upload, organize, and control access to downloadable files of any type. Whether you are sharing free resources, selling digital products, or delivering private documents, this plugin gives you full control over who can download your files and when.
+
+With unlimited downloads, flexible restrictions, and detailed tracking, you can confidently provide files to your audience while keeping them secure.
+
+= Key Features =
+
+- **Add unlimited downloadable files** – Add and manage as many downloadable files as you need, with no limits.
+- **Password Protection** – Protect individual files with custom passwords so only authorized users can access them.
+- **Restrict downloads to specific user roles** – Control file access based on WordPress user roles, ensuring that only administrators, editors, subscribers, or custom roles can download.
+- **Restrict downloads to specific IP addresses** – Restrict downloads to specific IP addresses to prevent abuse or unauthorized sharing.
+- **Restrict downloads to specific users** – Assign downloads to specific registered users for secure, private file delivery.
+- **Restrict downloads to newsletter subscribers** – Restrict downloads to Noptin newsletter subscriber, making it an excellent tool for lead generation.
+- **Track file downloads** – Track every file download with detailed statistics, helping you understand how your files are being accessed.
+- **Simple Management** – A user-friendly interface makes uploading and managing files straightforward, even for beginners.
+
+= Why Use This Plugin? =
+
+Managing downloads manually in WordPress can be difficult. Links can be shared publicly, access can’t easily be restricted, and tracking is limited. This plugin solves those problems by giving you advanced tools to:
+
+- Protect digital products such as **software, themes, and plugins**.
+- Share private **PDF documents, contracts, or reports** securely with clients.
+- Provide exclusive resources like **eBooks, whitepapers, and templates** to email subscribers.
+- Control access to files for **membership sites and online courses**.
+- Monitor and analyze download activity to make better business decisions.
+
+= Benefits for Your Website =
+
+By installing this plugin, you’ll be able to:
+
+- Grow your email list by offering subscriber-only downloads.
+- Monetize your website by controlling access to premium resources.
+- Increase security by preventing unauthorized downloads and link sharing.
+- Gain insights into how your downloads are performing.
+
+Whether you’re a blogger, developer, marketer, educator, or business owner, this plugin gives you all the tools you need to manage file downloads effectively in WordPress.
+
+Take control of your downloads today and provide a seamless, secure experience for your users.
 
 == Installation ==
 
@@ -36,11 +67,11 @@ This plugin allows you to:-
 
 = Can I see how many times each file has been downloaded? =
 
-Yes, Noptin allows you to view how many times each file has been downloaded, as well as which users have downloaded the file. This information is available in the Noptin dashboard, where you can see a list of all your downloadable files and their download stats. You can also see which users have downloaded the files, and view their information and activity in your mailing list. This can be useful for tracking the popularity of your files and understanding which users are interested in them.
+Yes, Hizzle Downloads allows you to view how many times each file has been downloaded, as well as which users have downloaded the file. This information is available in the Hizzle Downloads dashboard, where you can see a list of all your downloadable files and their download stats. You can also see which users have downloaded the files, and view their information and activity in your mailing list. This can be useful for tracking the popularity of your files and understanding which users are interested in them.
 
 = Can I restrict downloads by user role or newsletter subscription status? =
 
-Yes, Noptin allows you to restrict downloads by user role or newsletter subscription status. This means that you can choose which users are able to download your files, based on their user role on your website or their status as a newsletter subscriber. For example, you can make a file available only to users who are registered as members on your website, or only to users who have subscribed to your newsletter. This can be useful for creating exclusive content or offers for your users, and for encouraging people to sign up for your newsletter. You can set these restrictions for each of your downloadable files in the Noptin settings.
+Yes, Hizzle Downloads allows you to restrict downloads by user role or newsletter subscription status. This means that you can choose which users are able to download your files, based on their user role on your website or their status as a newsletter subscriber. For example, you can make a file available only to users who are registered as members on your website, or only to users who have subscribed to your newsletter. This can be useful for creating exclusive content or offers for your users, and for encouraging people to sign up for your newsletter. You can set these restrictions for each of your downloadable files in the Hizzle Downloads settings.
 
 = How do I display downloadable files? =
 
@@ -48,7 +79,7 @@ Use the `[hizzle-downloads]` shortcode to display all the downloadable files tha
 
 = How can I get in touch? =
 
-Use the [contact form on our website](https://hizzle.co/contact-us/).
+Use the [contact form on our website](https://hizzlewp.com/contact/).
 
 = How can I contribute? =
 
