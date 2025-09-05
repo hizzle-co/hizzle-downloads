@@ -4,8 +4,8 @@ Tags: files, downloads, digital downloads, download manager, restrict downloads
 Requires at least: 4.9
 Tested up to: 6.7
 Requires PHP: 5.6
-Version: 1.2.1
-Stable tag: 1.2.1
+Version: 1.2.2
+Stable tag: 1.2.2
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Donate link: https://noptin.com/products/?utm_source=wp-repo&utm_medium=donate&utm_campaign=readme
@@ -95,6 +95,9 @@ Yeah. The downloads list will take your theme's default styling.
 
 == Changelog ==
 
+= 1.2.2 =
+- Update composer packages.
+
 = 1.2.1 =
 - WordPress 6.8 compatibility.
 - Update composer packages.
@@ -130,7 +133,7 @@ Yeah. The downloads list will take your theme's default styling.
 - Register a software versions REST API route.
 
 = 1.0.3 =
-- Restrict downloads to newsletter subscribers.
+- Restrict downloads to Noptin newsletter subscribers.
 - Add support for password protected downloads.
 - Automatically update download files when there is a GitHub release.
 
