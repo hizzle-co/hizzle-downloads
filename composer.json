@@ -16,7 +16,7 @@
     "require": {
         "php": ">=5.3.0",
         "hizzle/store": "^0",
-        "hizzle/logger": "^0"
+        "hizzle/logger": "^1"
     },
     "autoload": {
         "psr-4": {
