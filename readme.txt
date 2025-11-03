@@ -21,7 +21,7 @@ Do you need a simple yet powerful way to manage file downloads on your WordPress
 
 With unlimited downloads, flexible restrictions, and detailed tracking, you can confidently provide files to your audience while keeping them secure.
 
-= Key Features =
+== Key Features ==
 
 - **Add unlimited downloadable files** – Add and manage as many downloadable files as you need, with no limits.
 - **Password Protection** – Protect individual files with custom passwords so only authorized users can access them.
@@ -32,7 +32,7 @@ With unlimited downloads, flexible restrictions, and detailed tracking, you can 
 - **Track file downloads** – Track every file download with detailed statistics, helping you understand how your files are being accessed.
 - **Simple Management** – A user-friendly interface makes uploading and managing files straightforward, even for beginners.
 
-= Why Use This Plugin? =
+== Why Use This Plugin? ==
 
 Managing downloads manually in WordPress can be difficult. Links can be shared publicly, access can’t easily be restricted, and tracking is limited. This plugin solves those problems by giving you advanced tools to:
 
@@ -42,7 +42,7 @@ Managing downloads manually in WordPress can be difficult. Links can be shared p
 - Control access to files for **membership sites and online courses**.
 - Monitor and analyze download activity to make better business decisions.
 
-= Benefits for Your Website =
+== Benefits for Your Website ==
 
 By installing this plugin, you’ll be able to:
 
@@ -61,40 +61,35 @@ The plugin supports automatic syncing of uploaded files to S3-compatible storage
 
 To enable this feature, define the following constants in your `wp-config.php` file:
 
-```php
-// Required constants
-define( 'HIZZLE_DOWNLOADS_S3_ENDPOINT', 'https://{$bucket}.s3.{$region}.amazonaws.com' );
-define( 'HIZZLE_DOWNLOADS_S3_ACCESS_KEY', 'your-access-key' );
-define( 'HIZZLE_DOWNLOADS_S3_SECRET_KEY', 'your-secret-key' );
-define( 'HIZZLE_DOWNLOADS_S3_BUCKET', 'your-bucket-name' );
-define( 'HIZZLE_DOWNLOADS_S3_REGION', 'your-bucket-region' );
- 
-```
+    // Required constants
+    define( 'HIZZLE_DOWNLOADS_S3_ENDPOINT', 'https://{$bucket}.s3.{$region}.amazonaws.com' );
+    define( 'HIZZLE_DOWNLOADS_S3_ACCESS_KEY', 'your-access-key' );
+    define( 'HIZZLE_DOWNLOADS_S3_SECRET_KEY', 'your-secret-key' );
+    define( 'HIZZLE_DOWNLOADS_S3_BUCKET', 'your-bucket-name' );
+    define( 'HIZZLE_DOWNLOADS_S3_REGION', 'your-bucket-region' );
 
-=== How it works ===
+= How it works =
 
 When the S3 credentials are configured:
 - Files uploaded to the `wp-content/uploads/hizzle_uploads/` directory are automatically synced to your S3-compatible storage
 - Files are organized by hostname (e.g., `my-site.com/path/to/file.zip`)
 - The sync happens automatically when downloads are created or updated
 
-=== Cloudflare R2 Example ===
+= Cloudflare R2 Example =
+Set you Clouflare details as shown below:-
 
-```php
-define( 'HIZZLE_DOWNLOADS_S3_ACCESS_KEY', 'your-r2-access-key' );
-define( 'HIZZLE_DOWNLOADS_S3_SECRET_KEY', 'your-r2-secret-key' );
-define( 'HIZZLE_DOWNLOADS_S3_BUCKET', 'your-bucket-name' );
-define( 'HIZZLE_DOWNLOADS_S3_ENDPOINT', 'https://your-account-id.r2.cloudflarestorage.com/your-bucket-name' );
-```
+    define( 'HIZZLE_DOWNLOADS_S3_ACCESS_KEY', 'your-r2-access-key' );
+    define( 'HIZZLE_DOWNLOADS_S3_SECRET_KEY', 'your-r2-secret-key' );
+    define( 'HIZZLE_DOWNLOADS_S3_BUCKET', 'your-bucket-name' );
+    define( 'HIZZLE_DOWNLOADS_S3_ENDPOINT', 'https://your-account-id.r2.cloudflarestorage.com/your-bucket-name' );
 
-=== DigitalOcean Spaces Example ===
+= DigitalOcean Spaces Example =
+Set your DigitalOcean Spaces details as shown below:-
 
-```php
-define( 'HIZZLE_DOWNLOADS_S3_ACCESS_KEY', 'your-spaces-access-key' );
-define( 'HIZZLE_DOWNLOADS_S3_SECRET_KEY', 'your-spaces-secret-key' );
-define( 'HIZZLE_DOWNLOADS_S3_BUCKET', 'your-space-name' );
-define( 'HIZZLE_DOWNLOADS_S3_ENDPOINT', 'https://your-space-name.nyc3.digitaloceanspaces.com' );
-```
+    define( 'HIZZLE_DOWNLOADS_S3_ACCESS_KEY', 'your-spaces-access-key' );
+    define( 'HIZZLE_DOWNLOADS_S3_SECRET_KEY', 'your-spaces-secret-key' );
+    define( 'HIZZLE_DOWNLOADS_S3_BUCKET', 'your-space-name' );
+    define( 'HIZZLE_DOWNLOADS_S3_ENDPOINT', 'https://your-space-name.nyc3.digitaloceanspaces.com' );
 
 == Installation ==
 
