@@ -21,8 +21,8 @@ class S3_Syncer {
 	public function __construct() {
 
 		// Listen to download created and updated hooks.
-		add_action( 'hizzle_download_created', array( $this, 'sync_download' ), 10, 1 );
-		add_action( 'hizzle_download_updated', array( $this, 'sync_download' ), 10, 2 );
+		add_action( 'hizzle_download_download_created', array( $this, 'sync_download' ), 10, 1 );
+		add_action( 'hizzle_download_download_updated', array( $this, 'sync_download' ), 10, 2 );
 	}
 
 	/**
