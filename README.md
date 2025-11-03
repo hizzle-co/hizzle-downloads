@@ -9,13 +9,11 @@ To enable this feature, define the following constants in your `wp-config.php` f
 
 ```php
 // Required constants
+define( 'HIZZLE_DOWNLOADS_S3_ENDPOINT', 'https://{$bucket}.s3.{$region}.amazonaws.com' );
 define( 'HIZZLE_DOWNLOADS_S3_ACCESS_KEY', 'your-access-key' );
 define( 'HIZZLE_DOWNLOADS_S3_SECRET_KEY', 'your-secret-key' );
 define( 'HIZZLE_DOWNLOADS_S3_BUCKET', 'your-bucket-name' );
 
-// Optional constants
-define( 'HIZZLE_DOWNLOADS_S3_REGION', 'us-east-1' ); // Default: us-east-1
-define( 'HIZZLE_DOWNLOADS_S3_ENDPOINT', 'https://your-custom-endpoint.com' ); // For S3-compatible services like Cloudflare R2
 ```
 
 ### How it works
@@ -32,4 +30,13 @@ define( 'HIZZLE_DOWNLOADS_S3_ACCESS_KEY', 'your-r2-access-key' );
 define( 'HIZZLE_DOWNLOADS_S3_SECRET_KEY', 'your-r2-secret-key' );
 define( 'HIZZLE_DOWNLOADS_S3_BUCKET', 'your-bucket-name' );
 define( 'HIZZLE_DOWNLOADS_S3_ENDPOINT', 'https://your-account-id.r2.cloudflarestorage.com/your-bucket-name' );
+```
+
+### DigitalOcean Spaces Example
+
+```php
+define( 'HIZZLE_DOWNLOADS_S3_ACCESS_KEY', 'your-spaces-access-key' );
+define( 'HIZZLE_DOWNLOADS_S3_SECRET_KEY', 'your-spaces-secret-key' );
+define( 'HIZZLE_DOWNLOADS_S3_BUCKET', 'your-space-name' );
+define( 'HIZZLE_DOWNLOADS_S3_ENDPOINT', 'https://your-space-name.nyc3.digitaloceanspaces.com' );
 ```

@@ -2,8 +2,8 @@
 
 namespace Hizzle\Downloads;
 
-use \Hizzle\Store\Store;
-use \Hizzle\Store\Webhooks;
+use Hizzle\Store\Store;
+use Hizzle\Store\Webhooks;
 
 /**
  * Contains the main plugin class.
@@ -132,6 +132,11 @@ class Plugin {
 		// Maybe install.
 		Installer::init();
 
+		// S3 syncer.
+		if ( defined( 'HIZZLE_DOWNLOADS_S3_ENDPOINT' ) ) {
+			S3_Syncer::init();
+		}
+
 		// Register block.
 		$this->register_block_type();
 
@@ -141,7 +146,6 @@ class Plugin {
 
 		// Init action.
 		do_action( 'hizzle_downloads_init' );
-
 	}
 
 	/**
@@ -262,9 +266,8 @@ class Plugin {
 		load_plugin_textdomain(
 			'hizzle-downloads',
 			false,
-			plugin_basename( dirname( __FILE__ ) ) . '/languages/'
+			plugin_basename( __DIR__ ) . '/languages/'
 		);
-
 	}
 
 	/**
