@@ -29,9 +29,9 @@
             'dev_requirement' => false,
         ),
         'hizzle/store' => array(
-            'pretty_version' => '0.2.11',
-            'version' => '0.2.11.0',
-            'reference' => 'a6e17c589443de791e9bf9eb9c2536c7401f09c2',
+            'pretty_version' => '0.2.13',
+            'version' => '0.2.13.0',
+            'reference' => '9bf26693a52a0c608d8aa4905a2a8f7b77394d81',
             'type' => 'library',
             'install_path' => __DIR__ . '/../hizzle/store',
             'aliases' => array(),
