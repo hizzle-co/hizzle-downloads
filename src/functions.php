@@ -479,3 +479,12 @@ function hizzle_downloads_display_downloads( $downloads ) {
 function hizzle_downloads_using_github_updater() {
 	return defined( 'HIZZLE_DOWNLOADS_GITHUB_WEBHOOK_TOKEN' ) && defined( 'HIZZLE_DOWNLOADS_GITHUB_ACCESS_TOKEN' );
 }
+
+/**
+ * Checks whether or not we're using the S3 syncer.
+ *
+ * @return bool
+ */
+function hizzle_downloads_using_s3_syncer() {
+	return defined( 'HIZZLE_DOWNLOADS_S3_ACCESS_KEY' ) && defined( 'HIZZLE_DOWNLOADS_S3_SECRET_KEY' ) && defined( 'HIZZLE_DOWNLOADS_S3_BUCKET' );
+}

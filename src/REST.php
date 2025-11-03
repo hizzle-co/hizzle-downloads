@@ -48,6 +48,11 @@ class REST {
 			$this->controllers['github_updater'] = new GitHub_Updater( $store->get_namespace() );
 		}
 
+		// S3 syncer.
+		if ( hizzle_downloads_using_s3_syncer() ) {
+			$this->controllers['s3_syncer'] = new S3_Syncer();
+		}
+
 		// Software versions.
 		if ( apply_filters( 'hizzle_downloads_register_software_versions_rest', hizzle_downloads_using_github_updater() ) ) {
 			$this->controllers['software_versions'] = new REST_Versions( $store->get_namespace() );
