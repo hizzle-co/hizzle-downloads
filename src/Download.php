@@ -92,7 +92,6 @@ class Download extends Record {
 			// Check if we have an absolute path.
 		} elseif ( ( ! isset( $parsed_file_path['scheme'] ) || ! in_array( $parsed_file_path['scheme'], array( 'http', 'https', 'ftp' ), true ) ) && isset( $parsed_file_path['path'] ) ) {
 			$remote_file = false;
-			$file_path   = $parsed_file_path['path'];
 		}
 
 		/**
@@ -104,7 +103,7 @@ class Download extends Record {
 		*/
 		return array(
 			'remote_file' => $remote_file,
-			'file_path'   => apply_filters( 'hizzle_download_parse_file_path', $file_path, $remote_file, $this ),
+			'file_path'   => apply_filters( 'hizzle_download_parse_file_path', wp_normalize_path( $file_path ), $remote_file, $this ),
 		);
 	}
 
@@ -122,7 +121,7 @@ class Download extends Record {
 
 		$filename = apply_filters( 'hizzle_downloaded_file_name', $filename, $this );
 
-		return empty( $filename ) ? sanitize_key( $this->get_file_name() ) : $filename;
+		return empty( $filename ) ? sanitize_key( $this->get_file_name() ) : sanitize_file_name( $filename );
 	}
 
 	/**
