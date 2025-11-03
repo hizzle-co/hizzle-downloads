@@ -5,6 +5,13 @@ namespace Hizzle\Downloads;
 /**
  * Syncs files to S3-compatible storage.
  *
+ * This class automatically uploads files from the hizzle_uploads directory to S3-compatible
+ * storage services like Amazon S3 and Cloudflare R2.
+ *
+ * Note: This implementation uses AWS Signature Version 2 for compatibility with various
+ * S3-compatible services. For very large files, consider implementing streaming uploads
+ * to avoid memory issues.
+ *
  * @version 1.0.0
  */
 
@@ -67,6 +74,12 @@ class S3_Syncer {
 
 		// Get the hostname.
 		$host_name = parse_url( home_url(), PHP_URL_HOST );
+
+		// Validate hostname.
+		if ( empty( $host_name ) ) {
+			hizzle_downloads()->logger->error( 'Failed to parse hostname from home_url()', 'hizzle_downloads' );
+			return;
+		}
 
 		// Prepare the S3 key.
 		$s3_key = $host_name . '/' . $new_file_name;
