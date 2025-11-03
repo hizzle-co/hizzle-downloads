@@ -13,14 +13,15 @@ define( 'HIZZLE_DOWNLOADS_S3_ENDPOINT', 'https://{$bucket}.s3.{$region}.amazonaw
 define( 'HIZZLE_DOWNLOADS_S3_ACCESS_KEY', 'your-access-key' );
 define( 'HIZZLE_DOWNLOADS_S3_SECRET_KEY', 'your-secret-key' );
 define( 'HIZZLE_DOWNLOADS_S3_BUCKET', 'your-bucket-name' );
-
+define( 'HIZZLE_DOWNLOADS_S3_REGION', 'your-bucket-region' );
+ 
 ```
 
 ### How it works
 
 When the S3 credentials are configured:
 - Files uploaded to the `wp-content/uploads/hizzle_uploads/` directory are automatically synced to your S3-compatible storage
-- Files are organized by hostname (e.g., `my-site.com/owner/file.zip`)
+- Files are organized by hostname (e.g., `my-site.com/path/to/file.zip`)
 - The sync happens automatically when downloads are created or updated
 
 ### Cloudflare R2 Example
