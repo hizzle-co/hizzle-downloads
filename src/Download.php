@@ -1,14 +1,14 @@
 <?php
 
-namespace Hizzle\Downloads;
-
-use \Hizzle\Store\Record;
-
 /**
  * Container for downloads.
  *
  * @version 1.0.0
  */
+
+namespace Hizzle\Downloads;
+
+use Hizzle\Store\Record;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -347,7 +347,7 @@ class Download extends Record {
 			$should_meet = 'is' === $rule['condition'];
 
 			if ( $is_rule_met === $should_meet ) {
-				$rules_met ++;
+				++$rules_met;
 			}
 		}
 
@@ -445,7 +445,6 @@ class Download extends Record {
 
 		// Delete the file.
 		return parent::delete( $force_delete );
-
 	}
 
 	/**
@@ -520,5 +519,4 @@ class Download extends Record {
 			$this
 		);
 	}
-
 }

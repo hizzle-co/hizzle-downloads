@@ -1,12 +1,12 @@
 <?php
 
-namespace Hizzle\Downloads;
-
 /**
  * Handles downloadable software versions.
  *
  * @version 1.0.0
  */
+
+namespace Hizzle\Downloads;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -33,8 +33,8 @@ class REST_Versions {
 	 * Loads the class.
 	 *
 	 */
-	public function __construct( $namespace ) {
-		$this->namespace = $namespace . '/v1';
+	public function __construct( $api_namespace ) {
+		$this->namespace = $api_namespace . '/v1';
 		$this->rest_base = 'versions';
 
 		// Register rest routes.
@@ -68,7 +68,6 @@ class REST_Versions {
 				),
 			)
 		);
-
 	}
 
 	/**
@@ -121,7 +120,6 @@ class REST_Versions {
 			$prepared[ $download ] = $download_file->get_version_info();
 		}
 
-        return rest_ensure_response( apply_filters( 'hizzle_get_downloadable_versions_rest', $prepared, $downloads ) );
-
-    }
+		return rest_ensure_response( apply_filters( 'hizzle_get_downloadable_versions_rest', $prepared, $downloads ) );
+	}
 }

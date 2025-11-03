@@ -2,16 +2,20 @@ name: Plugin asset/readme update
 on:
   push:
     branches:
-    - main
+      - main
+    paths:
+      - '.wordpress-org/**'
+      - 'readme.txt'
 jobs:
   stable:
     name: Push to stable
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@master
+    - uses: actions/checkout@V5
     - name: WordPress.org plugin asset/readme update
-      uses: 10up/action-wordpress-plugin-asset-update@master
+      uses: 10up/action-wordpress-plugin-asset-update@stable
       env:
         SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
         SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
         SLUG: hizzle-downloads
+        IGNORE_OTHER_FILES: true
