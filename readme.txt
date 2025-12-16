@@ -2,13 +2,13 @@
 Contributors: picocodes, mutendebrian
 Tags: files, downloads, digital downloads, download manager, restrict downloads
 Requires at least: 4.9
-Tested up to: 6.7
+Tested up to: 6.9
 Requires PHP: 5.6
-Version: 1.2.4
-Stable tag: 1.2.4
+Version: 1.2.5
+Stable tag: 1.2.5
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
-Donate link: https://noptin.com/products/?utm_source=wp-repo&utm_medium=donate&utm_campaign=readme
+Donate link: https://noptin.com/pricing/?utm_source=wp-repo&utm_medium=donate&utm_campaign=readme
 
 Easily add, restrict, and track digital downloads in WordPress — protect files with passwords, user roles, IPs, or subscriber access.
 
@@ -130,6 +130,10 @@ There are a lot of ways to contribute to this plugin:-
 Yeah. The downloads list will take your theme's default styling.
 
 == Changelog ==
+
+= 1.2.5 =
+- WordPress 6.9 compatibility.
+- Update composer packages.
 
 = 1.2.4 =
 - Update composer packages.
