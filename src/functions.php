@@ -1,8 +1,8 @@
 <?php
 
-use \Hizzle\Store;
-use \Hizzle\Downloads\Download;
-use \Hizzle\Downloads\Download_Log;
+use Hizzle\Store;
+use Hizzle\Downloads\Download;
+use Hizzle\Downloads\Download_Log;
 
 /**
  * Core Functions
@@ -41,7 +41,6 @@ function hizzle_downloads_get_option( $key, $default = null ) {
 
 	// General filter.
 	return apply_filters( 'hizzle_downloads_get_option', $value, $key );
-
 }
 
 /**
@@ -59,7 +58,6 @@ function hizzle_downloads_update_option( $key, $value ) {
 	$options[ $key ] = $value;
 
 	update_option( 'hizzle_downloads_options', $options );
-
 }
 
 /**
@@ -72,13 +70,13 @@ function hizzle_downloads_update_option( $key, $value ) {
  */
 function hizzle_downloads_get_data( $key ) {
 
-    // Try fetching it from the cache.
-    $data = wp_cache_get( "hizzle_downloads-data-$key", 'hizzle_downloads' );
-    if ( $data ) {
-        return $data;
-    }
+	// Try fetching it from the cache.
+	$data = wp_cache_get( "hizzle_downloads-data-$key", 'hizzle_downloads' );
+	if ( $data ) {
+		return $data;
+	}
 
-    $data = apply_filters( "hizzle_downloads_get_$key", include plugin_dir_path( __FILE__ ) . "data/$key.php" );
+	$data = apply_filters( "hizzle_downloads_get_$key", include plugin_dir_path( __FILE__ ) . "data/$key.php" );
 	wp_cache_set( "hizzle_downloads-data-$key", $data, 'hizzle_downloads', MINUTE_IN_SECONDS );
 
 	return $data;
@@ -93,7 +91,7 @@ function hizzle_downloads_get_data( $key ) {
  * @throws Store\Store_Exception
  */
 function hizzle_downloads_get_store() {
-    return hizzle_downloads()->store;
+	return hizzle_downloads()->store;
 }
 
 /**
@@ -131,7 +129,6 @@ function hizzle_downloads_get_record( $record_id, $collection_name ) {
 	} catch ( Hizzle\Store\Store_Exception $e ) {
 		return new WP_Error( $e->getErrorCode(), $e->getMessage(), $e->getErrorData() );
 	}
-
 }
 
 /**
@@ -178,7 +175,6 @@ function hizzle_downloads_query( $collection_name, $args = array(), $return = 'r
 	} catch ( Store\Store_Exception $e ) {
 		return new WP_Error( $e->getErrorCode(), $e->getMessage(), $e->getErrorData() );
 	}
-
 }
 
 /**
@@ -246,7 +242,7 @@ function hizzle_get_download( $download_id = 0 ) {
  * @return Download|WP_Error Download object if found, error object if not found.
  */
 function hizzle_get_download_by_file_name( $file_name ) {
-    return hizzle_get_download( hizzle_downloads_get_collection( 'files' )->get_id_by_prop( 'file_name', sanitize_text_field( $file_name ) ) );
+	return hizzle_get_download( hizzle_downloads_get_collection( 'files' )->get_id_by_prop( 'file_name', sanitize_text_field( $file_name ) ) );
 }
 
 /**
@@ -256,7 +252,7 @@ function hizzle_get_download_by_file_name( $file_name ) {
  * @return Download|WP_Error Download object if found, error object if not found.
  */
 function hizzle_get_download_by_git_url( $git_url ) {
-    return hizzle_get_download( hizzle_downloads_get_collection( 'files' )->get_id_by_prop( 'git_url', sanitize_text_field( strtolower( trailingslashit( $git_url ) ) ) ) );
+	return hizzle_get_download( hizzle_downloads_get_collection( 'files' )->get_id_by_prop( 'git_url', sanitize_text_field( strtolower( trailingslashit( $git_url ) ) ) ) );
 }
 
 /**
@@ -282,11 +278,11 @@ function hizzle_delete_download( $download_id ) {
  * @return string
  */
 function hizzle_download_method() {
-    $download_method = 'xsendfile';
+	$download_method = 'xsendfile';
 
-    if ( get_option( 'hizzle_downloads_xsendfile_missing' ) ) {
-        $download_method = 'force';
-    }
+	if ( get_option( 'hizzle_downloads_xsendfile_missing' ) ) {
+		$download_method = 'force';
+	}
 
 	return apply_filters( 'hizzle_download_method', $download_method );
 }
@@ -352,20 +348,20 @@ function hizzle_downloads_get_ip_address() {
  * @return array
  */
 function hizzle_prepare_users_for_select() {
-    $users = get_users(
-        array(
-            'fields'  => array( 'ID', 'user_login', 'display_name' ),
-            'orderby' => 'display_name',
-		    'order'   => 'ASC',
-        )
-    );
+	$users = get_users(
+		array(
+			'fields'  => array( 'ID', 'user_login', 'display_name' ),
+			'orderby' => 'display_name',
+			'order'   => 'ASC',
+		)
+	);
 
-    $prepared = array();
-    foreach ( $users as $user ) {
-        $prepared[ $user->ID ] = $user->display_name . ' (' . $user->user_login . ')';
-    }
+	$prepared = array();
+	foreach ( $users as $user ) {
+		$prepared[ $user->ID ] = $user->display_name . ' (' . $user->user_login . ')';
+	}
 
-    return $prepared;
+	return $prepared;
 }
 
 /**
@@ -375,22 +371,22 @@ function hizzle_prepare_users_for_select() {
  */
 function hizzle_downloads_get_conditional_logic_rules() {
 
-    $rules = array(
-        'user_role'  => array(
-            'label'       => __( 'User Role', 'hizzle-downloads' ),
-            'description' => __( 'Restrict access to this file to specific user roles.', 'hizzle-downloads' ),
-            'options'     => wp_roles()->get_names(),
-        ),
-        'user_id'    => array(
-            'label'       => __( 'User', 'hizzle-downloads' ),
-            'description' => __( 'Restrict access to this file to specific users.', 'hizzle-downloads' ),
-            'options'     => hizzle_prepare_users_for_select(),
-        ),
-        'ip_address' => array(
-            'label'       => __( 'IP Address', 'hizzle-downloads' ),
-            'description' => __( 'Restrict access to this file to specific IP addresses.', 'hizzle-downloads' ),
-        ),
-    );
+	$rules = array(
+		'user_role'  => array(
+			'label'       => __( 'User Role', 'hizzle-downloads' ),
+			'description' => __( 'Restrict access to this file to specific user roles.', 'hizzle-downloads' ),
+			'options'     => wp_roles()->get_names(),
+		),
+		'user_id'    => array(
+			'label'       => __( 'User', 'hizzle-downloads' ),
+			'description' => __( 'Restrict access to this file to specific users.', 'hizzle-downloads' ),
+			'options'     => hizzle_prepare_users_for_select(),
+		),
+		'ip_address' => array(
+			'label'       => __( 'IP Address', 'hizzle-downloads' ),
+			'description' => __( 'Restrict access to this file to specific IP addresses.', 'hizzle-downloads' ),
+		),
+	);
 
 	// Add newsletter subscription status.
 	if ( function_exists( 'noptin' ) ) {
@@ -405,7 +401,7 @@ function hizzle_downloads_get_conditional_logic_rules() {
 	}
 
 	// TODO: Add support for WooCommerce subscriptions.
-    return apply_filters( 'hizzle_downloads_get_conditional_logic_rules', $rules );
+	return apply_filters( 'hizzle_downloads_get_conditional_logic_rules', $rules );
 }
 
 /**
