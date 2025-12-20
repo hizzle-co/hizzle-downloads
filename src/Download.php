@@ -505,18 +505,21 @@ class Download extends Record {
 		return apply_filters(
 			'hizzle_downloads_get_version_info',
 			array(
-				'id'                    => $this->get_id(),
-				'name'                  => $this->get_file_name(),
-				'version'               => $this->get_version(),
-				'author'                => get_bloginfo( 'name' ),
-				'author_profile'        => home_url(),
-				'download_link'         => $this->current_user_can_download() ? $this->get_download_url() : '',
-				'sections'              => array_filter(
+				'name'           => $this->get_file_name(),
+				'version'        => $this->get_version(),
+				'author'         => get_bloginfo( 'name' ),
+				'author_profile' => home_url(),
+				'download_link'  => $this->current_user_can_download() ? $this->get_download_url() : '',
+				'sections'       => array_filter(
 					array(
 						'changelog' => $this->get_meta( 'changelog', '' ),
 					)
 				),
-				'has_conditional_logic' => $this->has_conditional_logic(),
+				'metadata'       => array(
+					'id'                    => $this->get_id(),
+					'path'                  => S3_Syncer::s3_key( $this ),
+					'has_conditional_logic' => $this->has_conditional_logic(),
+				),
 			),
 			$this
 		);

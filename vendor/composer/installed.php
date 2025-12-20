@@ -3,7 +3,7 @@
         'name' => 'hizzle/downloads',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => '614db19ce3c9720deeaa8126037216b0f26a8363',
+        'reference' => '0450caee14fe401d9beed36f42a0b086d7fd7140',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         'hizzle/downloads' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => '614db19ce3c9720deeaa8126037216b0f26a8363',
+            'reference' => '0450caee14fe401d9beed36f42a0b086d7fd7140',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

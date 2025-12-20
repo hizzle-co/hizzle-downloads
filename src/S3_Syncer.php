@@ -42,37 +42,15 @@ class S3_Syncer {
 	 */
 	public static function sync_download( $download ) {
 
-		// Ensure we have a Download object.
-		if ( ! $download instanceof Download ) {
-			return;
-		}
-
-		// Parse the file path.
-		$parsed = $download->parse_file_path();
-
-		// Only sync local files.
-		if ( ! empty( $parsed['remote_file'] ) ) {
-			return;
-		}
-
-		$file_path = $parsed['file_path'];
-
-		// Ensure the file exists.
-		if ( ! file_exists( $file_path ) ) {
-			return;
-		}
-
-		// Get the upload directory.
-		$upload_dir = wp_upload_dir();
-		$base_dir   = wp_normalize_path( trailingslashit( $upload_dir['basedir'] ) . 'hizzle_uploads/' );
-
-		// Check if the file is in the hizzle_uploads directory.
-		if ( 0 !== strpos( $file_path, $base_dir ) ) {
-			return;
-		}
-
 		// Remove the base directory from the file path.
-		$new_file_name = str_replace( $base_dir, '', $file_path );
+		$new_file_name = self::s3_key( $download );
+
+		if ( empty( $new_file_name ) ) {
+			return;
+		}
+
+		$parsed    = $download->parse_file_path();
+		$file_path = $parsed['file_path'];
 
 		// Get the hostname.
 		$host_name = wp_parse_url( home_url(), PHP_URL_HOST );
@@ -92,11 +70,51 @@ class S3_Syncer {
 				'hizzle_downloads_upload_to_s3',
 				$file_path,
 				$s3_key,
-				$download->get_downloaded_file_name(),
+				$download->get_downloaded_file_name()
 			);
 		} else {
 			do_action( 'hizzle_downloads_upload_to_s3', $file_path, $s3_key, $download->get_downloaded_file_name() );
 		}
+	}
+
+	/**
+	 * Fetches a file's S3 key.
+	 *
+	 * @param Download $download The download object.
+	 */
+	public static function s3_key( $download ) {
+
+		// Ensure we have a Download object.
+		if ( ! $download instanceof Download ) {
+			return '';
+		}
+
+		// Parse the file path.
+		$parsed = $download->parse_file_path();
+
+		// Only sync local files.
+		if ( ! empty( $parsed['remote_file'] ) ) {
+			return '';
+		}
+
+		$file_path = $parsed['file_path'];
+
+		// Ensure the file exists.
+		if ( ! file_exists( $file_path ) ) {
+			return '';
+		}
+
+		// Get the upload directory.
+		$upload_dir = wp_upload_dir();
+		$base_dir   = wp_normalize_path( trailingslashit( $upload_dir['basedir'] ) );
+
+		// Check if the file is in the hizzle_uploads directory.
+		if ( 0 !== strpos( $file_path, $base_dir ) ) {
+			return '';
+		}
+
+		// Remove the base directory from the file path.
+		return str_replace( $base_dir, '', $file_path );
 	}
 
 	/**
@@ -154,7 +172,7 @@ class S3_Syncer {
 		// Build the URL (path-style for S3-compatible services)
 		$uri = '/' . $bucket_name . '/' . $bucket_path;
 		$url = $scheme . '://' . $host;
-		if ( ( 'https' === $scheme && $port !== 443 ) || ( 'http' === $scheme && $port !== 80 ) ) {
+		if ( ( 'https' === $scheme && 443 !== $port ) || ( 'http' === $scheme && 80 !== $port ) ) {
 			$url .= ':' . $port;
 		}
 		$url .= $uri;
