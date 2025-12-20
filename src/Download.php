@@ -321,7 +321,7 @@ class Download extends Record {
 	 */
 	public function has_conditional_logic() {
 		$conditional_logic = $this->get_conditional_logic();
-		return ! empty( $conditional_logic['enabled'] );
+		return ! empty( $conditional_logic['enabled'] ) && ! empty( $conditional_logic['rules'] );
 	}
 
 	/**
