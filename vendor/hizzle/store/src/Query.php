@@ -339,13 +339,21 @@ class Query {
 		}
 	}
 
-	private function get_mysql_timezone_offset() {
+	/**
+	 * @param array $qv The query vars.
+	 */
+	private function get_mysql_timezone_offset( $qv ) {
 		$offset = get_option( 'gmt_offset', 0 );
 
-		// Ensure offset is a float in minutes
-		$offset = floatval( $offset ) * 60;
+		if ( isset( $qv['hizzle_timezone_offset'] ) ) {
+			$offset = floatval( $qv['hizzle_timezone_offset'] );
+		} else {
+			// Ensure offset is a float in minutes
+			$offset = floatval( $offset ) * 60;
+		}
 
 		if ( 0 > $offset ) {
+			$offset = abs( $offset );
 			return "DATE_SUB(%s, INTERVAL $offset MINUTE)";
 		}
 
@@ -428,6 +436,7 @@ class Query {
 			$field = str_replace( '.', '_', $field );
 
 			foreach ( array_filter( $aggregate ) as $function ) {
+				$distinct = false;
 
 				if ( is_array( $function ) ) {
 					if ( ! isset( $function['function'] ) ) {
@@ -436,6 +445,7 @@ class Query {
 
 					$as          = isset( $function['as'] ) ? esc_sql( $function['as'] ) : strtolower( $function['function'] ) . '_' . $field;
 					$query_field = isset( $function['expression'] ) ? $this->prepare_math_expression( $function['expression'], $field ) : $table_field;
+					$distinct    = ! empty( $function['distinct'] );
 					$function    = $function['function'];
 				} else {
 					$as          = strtolower( $function ) . '_' . $field;
@@ -448,12 +458,16 @@ class Query {
 					throw new Store_Exception( 'query_invalid_function', 'Invalid aggregate function.' );
 				}
 
-				$this->query_fields[] = "$function_upper($query_field) AS $as";
+				if ( $distinct ) {
+					$this->query_fields[] = "$function_upper(DISTINCT $query_field) AS $as";
+				} else {
+					$this->query_fields[] = "$function_upper($query_field) AS $as";
+				}	
 			}
 		}
 
 		// Prepare groupby fields.
-		$timezone_offset = $this->get_mysql_timezone_offset();
+		$timezone_offset = $this->get_mysql_timezone_offset( $qv );
 		if ( ! empty( $qv['groupby'] ) ) {
 			foreach ( wp_parse_list( $qv['groupby'] ) as $index => $field ) {
 				$cast = false;
