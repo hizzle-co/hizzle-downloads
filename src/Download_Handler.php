@@ -44,17 +44,17 @@ class Download_Handler {
 
 		// Abort if the file doesn't exist.
 		if ( is_wp_error( $file ) ) {
-			return $this->download_error( $file );
+			return $this->download_error( $file, 404 );
 		}
 
 		// Abort if the file is not downloadable.
 		if ( ! $file->is_downloadable() ) {
-			return $this->download_error( new \WP_Error( 'hizzle_downloads_file_not_downloadable', __( 'This file is not downloadable.', 'hizzle-downloads' ) ) );
+			return $this->download_error( new \WP_Error( 'hizzle_downloads_file_not_downloadable', __( 'This file is not downloadable.', 'hizzle-downloads' ) ), 400 );
 		}
 
 		// Check if the current user can download the file.
 		if ( ! $file->current_user_can_download() ) {
-			return $this->download_error( new \WP_Error( 'hizzle_downloads_user_cannot_download', __( 'You do not have permission to download this file.', 'hizzle-downloads' ) ) );
+			return $this->download_error( new \WP_Error( 'hizzle_downloads_user_cannot_download', __( 'You do not have permission to download this file.', 'hizzle-downloads' ) ), 403 );
 		}
 
 		// Maybe request a password.
@@ -66,7 +66,7 @@ class Download_Handler {
 		$parsed_file_path = $file->parse_file_path();
 
 		try {
-			$download_range   = self::get_download_range( @filesize( $parsed_file_path['file_path'] ) );  // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
+			$download_range = self::get_download_range( @filesize( $parsed_file_path['file_path'] ) );  // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged
 
 			// Track the download.
 			if ( ! $download_range['is_range_request'] ) {
@@ -81,7 +81,7 @@ class Download_Handler {
 			do_action( 'hizzle_download_file_' . hizzle_download_method(), $file );
 		} catch ( \Exception $e ) {
 			$this->log( $e->getMessage(), 'error', $parsed_file_path );
-			$this->download_error( new \WP_Error( 'hizzle_downloads_error', $e->getMessage() ) );
+			$this->download_error( new \WP_Error( 'hizzle_downloads_error', $e->getMessage() ), 500 );
 		}
 
 		exit;
@@ -102,9 +102,11 @@ class Download_Handler {
 
 		// Check the password.
 		if ( ! hash_equals( wp_unslash( $_POST['hizzle_downloads_file_password'] ), $file->get_password() ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-			$this->download_error( new \WP_Error( 'hizzle_downloads_password_incorrect', __( 'The password you entered is incorrect. Please try again.', 'hizzle-downloads' ) ), $file );
+			$this->download_error(
+				new \WP_Error( 'hizzle_downloads_password_incorrect', __( 'The password you entered is incorrect. Please try again.', 'hizzle-downloads' ) ),
+				403
+			);
 		}
-
 	}
 
 	/**
@@ -197,7 +199,7 @@ class Download_Handler {
 				);
 				do_action( 'hizzle_download_file_redirect', $file );
 			} else {
-				self::download_error( __( 'File not found', 'hizzle-downloads' ) );
+				self::download_error( __( 'File not found', 'hizzle-downloads' ), 404 );
 			}
 		}
 
@@ -450,7 +452,7 @@ class Download_Handler {
 	 *
 	 * @param \WP_Error $error The error to display.
 	 */
-	private function download_error( $error ) {
+	private function download_error( $error, $code = 400 ) {
 
 		/*
 		 * Since we will now render a message instead of serving a download, we should unwind some of the previously set
@@ -465,7 +467,7 @@ class Download_Handler {
 			header_remove( 'Content-Transfer-Encoding' );
 		}
 
-		wp_die( $error, 400 ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		wp_die( $error, $code ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	}
 
 	/**
