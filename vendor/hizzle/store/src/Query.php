@@ -88,7 +88,7 @@ class Query {
 	 * Contains the 'FIELDS' sql clause
 	 *
 	 * @since 1.0.0
-	 * @var string
+	 * @var string[]
 	 */
 	public $query_fields;
 
@@ -544,12 +544,19 @@ class Query {
 			foreach ( wp_parse_list( $qv['extra_fields'] ) as $field ) {
 
 				// Ensure the field is supported.
-				$field = $this->prefix_field( esc_sql( $field ) );
-				if ( empty( $field ) ) {
+				$table_field = $this->prefix_field( esc_sql( $field ) );
+				if ( empty( $table_field ) ) {
 					throw new Store_Exception( 'query_invalid_field', 'Invalid extra field.' );
 				}
 
-				$this->query_fields[] = $field;
+				// Skip if the extra field is already included in the query fields (e.g. as a groupby field).
+				if ( in_array( $table_field . ' AS `' . $field . '`', $this->query_fields, true ) ) {
+					continue;
+				}
+
+				// Bypass MySQL ONLY_FULL_GROUP_BY mode by selecting any value for non-aggregated fields that are not in the GROUP BY clause.
+				// ANY_VALUE is not supported in all MySQL versions, so we use MIN.
+				$this->query_fields[] = sprintf( 'MIN(%s) as `%s`', $table_field, esc_sql( str_replace( '.', '_', $field ) ) );
 			}
 		}
 
@@ -856,6 +863,15 @@ class Query {
 		$collection = $this->get_collection();
 		$all_fields = array_merge( $this->known_fields['main'], $this->known_fields['post'] );
 
+		// Fix email filter not working.
+		$primary = 'id';
+
+		if ( in_array( 'email', $all_fields, true ) ) {
+			$primary = 'email';
+		} elseif ( in_array( 'name', $all_fields, true ) ) {
+			$primary = 'name';
+		}
+
 		// Table fields.
 		foreach ( $all_fields as $key ) {
 
@@ -864,9 +880,17 @@ class Query {
 			$data_type  = $field->get_data_type();
 
 			// = or IN.
-			if ( isset( $qv[ $key ] ) && 'any' !== $qv[ $key ] ) {
+			if ( array_key_exists( $key, $qv ) && 'any' !== $qv[ $key ] ) {
 
-				if ( is_array( $qv[ $key ] ) ) {
+				if ( 'id' === $key || $primary === $key || ( isset( $collection->keys['unique'] ) && in_array( $key, (array) $collection->keys['unique'], true ) ) ) {
+					if ( is_string( $qv[ $key ] ) ) {
+						$qv[ $key ] = noptin_parse_list( $qv[ $key ], true );
+					}
+				}
+
+				if ( is_null( $qv[ $key ] ) ) {
+					$this->query_where .= " AND $field_name IS NULL";
+				} elseif ( is_array( $qv[ $key ] ) ) {
 					$enums              = "'" . implode( "','", array_map( 'esc_sql', $qv[ $key ] ) ) . "'";
 					$this->query_where .= " AND $field_name IN ($enums)";
 				} else {
@@ -877,9 +901,11 @@ class Query {
 			}
 
 			// != or NOT IN.
-			if ( isset( $qv[ "{$key}_not" ] ) ) {
+			if ( array_key_exists( "{$key}_not", $qv ) ) {
 
-				if ( is_array( $qv[ "{$key}_not" ] ) ) {
+				if ( is_null( $qv[ "{$key}_not" ] ) ) {
+					$this->query_where .= " AND $field_name IS NOT NULL";
+				} elseif ( is_array( $qv[ "{$key}_not" ] ) ) {
 					$enums              = "'" . implode( "','", array_map( 'esc_sql', $qv[ "{$key}_not" ] ) ) . "'";
 					$this->query_where .= " AND $field_name NOT IN ($enums)";
 				} else {
@@ -941,6 +967,13 @@ class Query {
 
 		if ( $search ) {
 			trim( $search, '*' );
+
+			// If search is <$email>, remove the angle brackets to allow searching by email.
+			if ( preg_match( '/^<(.+)>$/', $search, $matches ) ) {
+				if ( is_email( $matches[1] ) ) {
+					$search = $matches[1];
+				}
+			}
 
 			$search_columns = array();
 			if ( $qv['search_columns'] ) {
@@ -1008,6 +1041,21 @@ class Query {
 				$searches[] = $wpdb->prepare( "$field_name = %s", $string ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 			} else {
 				$searches[] = $wpdb->prepare( "$field_name LIKE %s", $like ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+
+				// Is the user searching by a display name but the collection only has first_name and last_name fields?
+				if ( 'first_name' === $col || 'last_name' === $col ) {
+					$name = explode( ' ', $string, 2 );
+
+					if ( 'first_name' === $col && ! empty( $name[0] ) ) {
+						$name       = $wpdb->esc_like( $name[0] ) . '%';
+						$searches[] = $wpdb->prepare( "{$this->prefix_field( 'first_name' )} LIKE %s", $name ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+					}
+
+					if ( 'last_name' === $col && ! empty( $name[1] ) ) {
+						$name       = $wpdb->esc_like( $name[1] ) . '%';
+						$searches[] = $wpdb->prepare( "{$this->prefix_field( 'last_name' )} LIKE %s", $name ); // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+					}
+				}
 			}
 		}
 
@@ -1144,6 +1192,10 @@ class Query {
 
 		if ( ! empty( $args['paged'] ) ) {
 			$args['page'] = $args['paged'];
+		}
+
+		if ( ! empty( $args['group_by'] ) ) {
+			$args['groupby'] = $args['group_by'];
 		}
 
 		// Default to ordering by ID ascending when not an aggregate query.
@@ -1308,6 +1360,8 @@ class Query {
 	protected function query_aggregate() {
 		global $wpdb;
 
+		$this->total_results = 0;
+
 		// Allow third party plugins to modify the query.
 		$collection      = Collection::instance( $this->collection_name );
 		$this->aggregate = apply_filters_ref_array( $collection->hook_prefix( 'pre_aggregate_query' ), array( null, &$this ) );
@@ -1316,6 +1370,11 @@ class Query {
 		if ( null === $this->aggregate ) {
 			$this->request   = "SELECT $this->query_fields $this->query_from $this->query_join $this->query_where $this->query_groupby $this->query_orderby $this->query_limit";
 			$this->aggregate = $wpdb->get_results( $this->request ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+
+			// Calculate total results if requested (without ORDER BY, and LIMIT).
+			if ( ! empty( $this->query_vars['count_total_aggregate_results'] ) ) {
+				$this->total_results = (int) $wpdb->get_var( "SELECT COUNT(*) AS total_rows FROM (SELECT $this->query_fields $this->query_from $this->query_join $this->query_where $this->query_groupby) as grouped_results;" ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+			}
 		}
 	}
 }
