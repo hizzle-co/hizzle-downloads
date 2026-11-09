@@ -508,6 +508,14 @@ class REST_Controller extends \WP_REST_Controller {
 	 * @return \WP_Error|boolean
 	 */
 	public function get_item_permissions_check( $request ) {
+		$collection = $this->fetch_collection();
+
+		// Check collection access before looking up a non-post record. Otherwise
+		// the response reveals whether an inaccessible record exists.
+		if ( ! $collection || ( empty( $collection->post_type ) && ! $this->check_record_permissions( 'read' ) ) ) {
+			return new \WP_Error( 'hizzle_rest_cannot_view', 'Sorry, you cannot view this resource.', array( 'status' => rest_authorization_required_code() ) );
+		}
+
 		$object = $this->get_object( $request );
 
 		if ( $object && $object->exists() && ! $this->check_record_permissions( 'read', $object->get_id() ) ) {
@@ -524,6 +532,12 @@ class REST_Controller extends \WP_REST_Controller {
 	 * @return WP_Error|boolean
 	 */
 	public function update_item_permissions_check( $request ) {
+		$collection = $this->fetch_collection();
+
+		if ( ! $collection || ( empty( $collection->post_type ) && ! $this->check_record_permissions( 'edit' ) ) ) {
+			return new \WP_Error( 'hizzle_rest_cannot_edit', 'Sorry, you are not allowed to edit this resource.', array( 'status' => rest_authorization_required_code() ) );
+		}
+
 		$object = $this->get_object( $request );
 
 		if ( $object && $object->exists() && ! $this->check_record_permissions( 'edit', $object->get_id() ) ) {
@@ -540,6 +554,12 @@ class REST_Controller extends \WP_REST_Controller {
 	 * @return bool|WP_Error
 	 */
 	public function delete_item_permissions_check( $request ) {
+		$collection = $this->fetch_collection();
+
+		if ( ! $collection || ( empty( $collection->post_type ) && ! $this->check_record_permissions( 'delete' ) ) ) {
+			return new \WP_Error( 'hizzle_rest_cannot_delete', 'Sorry, you are not allowed to delete this resource.', array( 'status' => rest_authorization_required_code() ) );
+		}
+
 		$object = $this->get_object( $request );
 
 		if ( $object && $object->exists() && ! $this->check_record_permissions( 'delete', $object->get_id() ) ) {
@@ -1080,11 +1100,25 @@ class REST_Controller extends \WP_REST_Controller {
 		$fields = isset( $request['__fields'] ) ? wp_parse_list( $request['__fields'] ) : $this->get_fields_for_response( $request );
 		$data   = array();
 
-		foreach ( $item->get_data() as $key => $value ) {
+		$known_fields = array_unique(
+			array_merge(
+				array( 'id', 'hizzlewp_actions' ),
+				wp_list_pluck( $item->get_collection()->get_props(), 'name' )
+			)
+		);
+
+		foreach ( $known_fields as $key ) {
 			if ( rest_is_field_included( $key, $fields ) ) {
+				$context = $request['context'] ?? 'view';
+				$value   = $item->get( $key, $context );
+
+				// Edit getters serialize metadata for database writes; REST returns structured data.
+				if ( 'metadata' === $key && is_string( $value ) ) {
+					$value = json_decode( $value, true ) ?: array();
+				}
 
 				// If value is a date, convert it to the ISO8601 format.
-				if ( $value instanceof Date_Time ) {
+				if ( $value instanceof \DateTime ) {
 					$value = $value->format( 'Y-m-d\TH:i:sP' );
 
 					// If value contains 00:00:00, remove the time.
