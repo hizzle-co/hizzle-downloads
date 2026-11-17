@@ -18,14 +18,14 @@ class REST_Controller extends \WP_REST_Controller {
 	/**
 	 * Contains the admin app routes prefix.
 	 *
-	 * @param string
+	 * @var string
 	 */
 	protected $admin_routes_prefix;
 
 	/**
 	 * Loads the class.
 	 *
-	 * @param string $namespace The store's namespace.
+	 * @param string $store_namespace The store's namespace.
 	 * @param string $collection The current collection.
 	 */
 	public function __construct( $store_namespace, $collection ) {
@@ -38,8 +38,19 @@ class REST_Controller extends \WP_REST_Controller {
 		// Register rest routes.
 		add_action( 'rest_api_init', array( $this, 'register_routes' ) );
 
+		Abilities::init( $store_namespace, $collection, $this );
+
 		// Background export cron handlers.
 		Export::init();
+	}
+
+	/**
+	 * Retrieve the collection route using this controller's REST namespace and base.
+	 *
+	 * @return string Collection REST path, including its leading slash.
+	 */
+	public function get_collection_route() {
+		return '/' . trim( $this->namespace, '/' ) . '/' . trim( $this->rest_base, '/' );
 	}
 
 	/**
@@ -50,7 +61,7 @@ class REST_Controller extends \WP_REST_Controller {
 	 */
 	public function fetch_store() {
 		try {
-			return Store::instance( trim( $this->namespace, '/v1' ) );
+			return Store::instance( substr( $this->namespace, 0, -3 ) );
 		} catch ( Store_Exception $e ) {
 			return null;
 		}
@@ -450,7 +461,7 @@ class REST_Controller extends \WP_REST_Controller {
 	 * @since  1.0.0
 	 * @param  \WP_REST_Request $request  Full details about the request.
 	 * @param  bool            $creating If is creating a new object.
-	 * @return Record|WP_Error
+	 * @return Record|\WP_Error
 	 */
 	protected function save_object( $request, $creating = false ) {
 
@@ -528,8 +539,8 @@ class REST_Controller extends \WP_REST_Controller {
 	/**
 	 * Check if a given request has access to update an item.
 	 *
-	 * @param  WP_REST_Request $request Full details about the request.
-	 * @return WP_Error|boolean
+	 * @param  \WP_REST_Request $request Full details about the request.
+	 * @return \WP_Error|boolean
 	 */
 	public function update_item_permissions_check( $request ) {
 		$collection = $this->fetch_collection();
@@ -550,8 +561,8 @@ class REST_Controller extends \WP_REST_Controller {
 	/**
 	 * Check if a given request has access to delete an item.
 	 *
-	 * @param  WP_REST_Request $request Full details about the request.
-	 * @return bool|WP_Error
+	 * @param  \WP_REST_Request $request Full details about the request.
+	 * @return bool|\WP_Error
 	 */
 	public function delete_item_permissions_check( $request ) {
 		$collection = $this->fetch_collection();
@@ -630,7 +641,7 @@ class REST_Controller extends \WP_REST_Controller {
 		$collection = $this->fetch_collection();
 
 		if ( rest_sanitize_boolean( $request['background_export'] ?? false ) ) {
-			$store_namespace = trim( $this->namespace, '/v1' );
+			$store_namespace = substr( $this->namespace, 0, -3 );
 
 			$email = $request['email'];
 			if ( empty( $email ) || ! is_email( $email ) ) {
@@ -720,7 +731,7 @@ class REST_Controller extends \WP_REST_Controller {
 	 * @since 1.0.0
 	 *
 	 * @param \WP_REST_Request $request Full details about the request.
-	 * @return \WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 * @return \WP_REST_Response|\WP_Error Response object on success, or WP_Error object on failure.
 	 */
 	public function get_item( $request ) {
 		$object = $this->get_object( $request );
@@ -744,7 +755,7 @@ class REST_Controller extends \WP_REST_Controller {
 	 * @since 1.0.0
 	 *
 	 * @param \WP_REST_Request $request Full details about the request.
-	 * @return \WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 * @return \WP_REST_Response|\WP_Error Response object on success, or WP_Error object on failure.
 	 */
 	public function get_item_overview( $request ) {
 		$object = $this->get_object( $request );
@@ -776,7 +787,7 @@ class REST_Controller extends \WP_REST_Controller {
 	 * @since 1.0.0
 	 *
 	 * @param \WP_REST_Request $request Full details about the request.
-	 * @return \WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 * @return \WP_REST_Response|\WP_Error Response object on success, or WP_Error object on failure.
 	 */
 	public function get_item_tab_content( $request ) {
 		// Make sure we have a valid record.
@@ -812,7 +823,7 @@ class REST_Controller extends \WP_REST_Controller {
 	 * @since 1.0.0
 	 *
 	 * @param \WP_REST_Request $request Full details about the request.
-	 * @return \WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 * @return \WP_REST_Response|\WP_Error Response object on success, or WP_Error object on failure.
 	 */
 	public function remote_action( $request ) {
 		$object = $this->get_object( $request );
@@ -991,8 +1002,8 @@ class REST_Controller extends \WP_REST_Controller {
 	 *
 	 * @since 1.0.0
 	 *
-	 * @param WP_REST_Request $request Full details about the request.
-	 * @return WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 * @param \WP_REST_Request $request Full details about the request.
+	 * @return \WP_REST_Response|\WP_Error Response object on success, or WP_Error object on failure.
 	 */
 	public function delete_item( $request ) {
 		$object = $this->get_object( $request );
@@ -1094,7 +1105,7 @@ class REST_Controller extends \WP_REST_Controller {
 	 *
 	 * @param Record           $item    WordPress representation of the item.
 	 * @param \WP_REST_Request $request Request object.
-	 * @return \WP_REST_Response|WP_Error Response object on success, or WP_Error object on failure.
+	 * @return \WP_REST_Response|\WP_Error Response object on success, or WP_Error object on failure.
 	 */
 	public function prepare_item_for_response( $item, $request ) {
 		$fields = isset( $request['__fields'] ) ? wp_parse_list( $request['__fields'] ) : $this->get_fields_for_response( $request );
@@ -1612,7 +1623,7 @@ class REST_Controller extends \WP_REST_Controller {
 				);
 
 				if ( $prop->is_tokens ) {
-					$schema[ $prop->name ]['suggestions'] = $collection->get_all_meta( $prop->name );
+					$schema[ $prop->name ]['suggestions'] = $prop->get_token_suggestions();
 				}
 			}
 
@@ -1705,7 +1716,7 @@ class REST_Controller extends \WP_REST_Controller {
 	 * @return string
 	 */
 	protected function get_normalized_rest_base() {
-		return preg_replace( '/\(.*\)\//i', '', trim( $this->namespace, '/v1' ) . '_' . $this->rest_base );
+		return preg_replace( '/\(.*\)\//i', '', substr( $this->namespace, 0, -3 ) . '_' . $this->rest_base );
 	}
 
 	/**
