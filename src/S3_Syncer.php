@@ -21,7 +21,6 @@ defined( 'ABSPATH' ) || exit;
  * Syncs files to S3-compatible storage.
  */
 class S3_Syncer {
-
 	/**
 	 * Loads the class.
 	 */
@@ -32,7 +31,7 @@ class S3_Syncer {
 		add_action( 'hizzle_download_download_updated', __CLASS__ . '::sync_download' );
 
 		// Register the upload to S3 action.
-		add_action( 'hizzle_downloads_upload_to_s3', __CLASS__ . '::upload_to_s3', 10, 3 );
+		add_action( 'hizzle_downloads_upload_to_s3', __CLASS__ . '::upload_to_s3', 10, 4 );
 	}
 
 	/**
@@ -118,145 +117,116 @@ class S3_Syncer {
 	}
 
 	/**
-	 * Upload a file to S3-compatible storage using AWS Signature Version 4
+	 * Uploads a private file with optional S3/R2 custom metadata.
 	 *
-	 * @param string $local_file_path Full path to the local file
-	 * @param string $bucket_path     Path in the bucket (e.g., 'folder/file.pdf')
-	 * @param string $downloaded_file_name The name of the downloaded file
+	 * @param string $local_file_path Local file.
+	 * @param string $bucket_path Object key.
+	 * @param string $downloaded_file_name Attachment filename.
+	 * @param array  $metadata ASCII custom metadata, without the x-amz-meta- prefix.
+	 * @return array|\WP_Error HTTP response or error.
 	 */
-	public static function upload_to_s3( $local_file_path, $bucket_path, $downloaded_file_name ) {
+	public static function upload_to_s3( $local_file_path, $bucket_path, $downloaded_file_name, $metadata = array() ) {
+		return self::request_s3( 'PUT', $bucket_path, $local_file_path, $downloaded_file_name, $metadata );
+	}
 
+	/**
+	 * Removes an object when a synced download is deleted or becomes unavailable.
+	 *
+	 * @param string $bucket_path Object key.
+	 * @return array|\WP_Error HTTP response or error.
+	 */
+	public static function delete_from_s3( $bucket_path ) {
+		return self::request_s3( 'DELETE', $bucket_path );
+	}
+
+	/**
+	 * Signs file and metadata together so policy cannot be substituted in transit.
+	 *
+	 * @param string $method PUT or DELETE.
+	 * @param string $bucket_path Object key.
+	 * @param string $local_file_path Local file for PUT.
+	 * @param string $filename Attachment name.
+	 * @param array  $metadata Custom metadata.
+	 * @return array|\WP_Error HTTP response or error.
+	 */
+	private static function request_s3( $method, $bucket_path, $local_file_path = '', $filename = '', $metadata = array() ) {
 		$access_key  = defined( 'HIZZLE_DOWNLOADS_S3_ACCESS_KEY' ) ? HIZZLE_DOWNLOADS_S3_ACCESS_KEY : '';
 		$secret_key  = defined( 'HIZZLE_DOWNLOADS_S3_SECRET_KEY' ) ? HIZZLE_DOWNLOADS_S3_SECRET_KEY : '';
 		$bucket_name = defined( 'HIZZLE_DOWNLOADS_S3_BUCKET' ) ? HIZZLE_DOWNLOADS_S3_BUCKET : '';
 		$region      = defined( 'HIZZLE_DOWNLOADS_S3_REGION' ) ? HIZZLE_DOWNLOADS_S3_REGION : 'us-east-1';
-
-		// Check if file exists
-		if ( ! file_exists( $local_file_path ) ) {
-			return hizzle_downloads()->logger->error(
-				'Local file does not exist: ' . $local_file_path,
-				'hizzle-downloads'
-			);
+		$endpoint    = defined( 'HIZZLE_DOWNLOADS_S3_ENDPOINT' ) ? HIZZLE_DOWNLOADS_S3_ENDPOINT : '';
+		if ( ! $endpoint || ! $access_key || ! $secret_key || ! $bucket_name ) {
+			return new \WP_Error( 's3_not_configured', 'S3 credentials are not configured.' );
 		}
-
-		// Get S3 credentials from constants
-		$endpoint   = defined( 'HIZZLE_DOWNLOADS_S3_ENDPOINT' ) ? HIZZLE_DOWNLOADS_S3_ENDPOINT : '';
-		$access_key = defined( 'HIZZLE_DOWNLOADS_S3_ACCESS_KEY' ) ? HIZZLE_DOWNLOADS_S3_ACCESS_KEY : '';
-		$secret_key = defined( 'HIZZLE_DOWNLOADS_S3_SECRET_KEY' ) ? HIZZLE_DOWNLOADS_S3_SECRET_KEY : '';
-
-		// Validate credentials
-		if ( empty( $endpoint ) || empty( $access_key ) || empty( $secret_key ) ) {
-			return hizzle_downloads()->logger->error(
-				'S3 credentials not configured. Please define HIZZLE_DOWNLOADS_S3_ENDPOINT, HIZZLE_DOWNLOADS_S3_ACCESS_KEY, and HIZZLE_DOWNLOADS_S3_SECRET_KEY.',
-				'hizzle-downloads'
-			);
+		if ( 'PUT' === $method && ! is_readable( $local_file_path ) ) {
+			return new \WP_Error( 's3_file_missing', 'The local download file is unavailable.' );
 		}
-
-		// Prepare file data
-		$bucket_path  = ltrim( $bucket_path, '/' );
-		$file_content = file_get_contents( $local_file_path );
-		$file_size    = filesize( $local_file_path );
-
-		// Get file MIME type
-		$mime_type = mime_content_type( $local_file_path );
-		if ( ! $mime_type ) {
-			$mime_type = 'application/octet-stream';
+		$content = 'PUT' === $method ? file_get_contents( $local_file_path ) : '';
+		if ( false === $content ) {
+			return new \WP_Error( 's3_read_failed', 'The local download file could not be read.' );
 		}
-
-		// Parse endpoint
-		$endpoint_parts = wp_parse_url( $endpoint );
-		$scheme         = isset( $endpoint_parts['scheme'] ) ? $endpoint_parts['scheme'] : 'https';
-		$host           = isset( $endpoint_parts['host'] ) ? $endpoint_parts['host'] : $endpoint;
-		$port           = isset( $endpoint_parts['port'] ) ? $endpoint_parts['port'] : ( 'https' === $scheme ? 443 : 80 );
-
-		// Build the URL (path-style for S3-compatible services)
-		$uri = '/' . $bucket_name . '/' . $bucket_path;
-		$url = $scheme . '://' . $host;
-		if ( ( 'https' === $scheme && 443 !== $port ) || ( 'http' === $scheme && 80 !== $port ) ) {
-			$url .= ':' . $port;
+		$mime  = 'PUT' === $method ? mime_content_type( $local_file_path ) : 'application/octet-stream';
+		$mime  = $mime ? $mime : 'application/octet-stream';
+		$parts = wp_parse_url( $endpoint );
+		if ( empty( $parts['host'] ) || empty( $parts['scheme'] ) ) {
+			return new \WP_Error( 's3_invalid_endpoint', 'The S3 endpoint is invalid.' );
 		}
-		$url .= $uri;
-
-		// Prepare AWS Signature Version 4 headers
-		$service        = 's3';
-		$algorithm      = 'AWS4-HMAC-SHA256';
-		$amz_date       = gmdate( 'Ymd\THis\Z' );
-		$date_stamp     = gmdate( 'Ymd' );
-		$content_sha256 = hash( 'sha256', $file_content );
-
-		// Create canonical headers
+		$host              = $parts['host'] . ( isset( $parts['port'] ) ? ':' . $parts['port'] : '' );
+		$uri               = '/' . rawurlencode( $bucket_name ) . '/' . implode( '/', array_map( 'rawurlencode', explode( '/', ltrim( $bucket_path, '/' ) ) ) );
+		$url               = $parts['scheme'] . '://' . $host . $uri;
+		$amz_date          = gmdate( 'Ymd\THis\Z' );
+		$date_stamp        = substr( $amz_date, 0, 8 );
+		$payload_hash      = hash( 'sha256', $content );
 		$canonical_headers = array(
-			'content-type'         => $mime_type,
+			'content-type'         => $mime,
 			'host'                 => $host,
-			'x-amz-acl'            => 'private',
-			'x-amz-content-sha256' => $content_sha256,
+			'x-amz-content-sha256' => $payload_hash,
 			'x-amz-date'           => $amz_date,
 		);
-
-		ksort( $canonical_headers );
-
-		$canonical_headers_str = '';
-		$signed_headers_str    = '';
-		foreach ( $canonical_headers as $key => $value ) {
-			$canonical_headers_str .= $key . ':' . trim( $value ) . "\n";
-			$signed_headers_str    .= $key . ';';
+		if ( 'PUT' === $method ) {
+			$canonical_headers['x-amz-acl'] = 'private';
 		}
-		$signed_headers_str = rtrim( $signed_headers_str, ';' );
-
-		// Create canonical request
-		$canonical_request  = "PUT\n";
-		$canonical_request .= $uri . "\n";
-		$canonical_request .= "\n"; // The query string is empty
-		$canonical_request .= $canonical_headers_str . "\n";
-		$canonical_request .= $signed_headers_str . "\n";
-		$canonical_request .= $content_sha256;
-
-		// Create string to sign
-		$credential_scope = $date_stamp . '/' . $region . '/' . $service . '/aws4_request';
-		$string_to_sign   = $algorithm . "\n";
-		$string_to_sign  .= $amz_date . "\n";
-		$string_to_sign  .= $credential_scope . "\n";
-		$string_to_sign  .= hash( 'sha256', $canonical_request );
-
-		// Calculate signing key
-		$k_date    = hash_hmac( 'sha256', $date_stamp, 'AWS4' . $secret_key, true );
-		$k_region  = hash_hmac( 'sha256', $region, $k_date, true );
-		$k_service = hash_hmac( 'sha256', $service, $k_region, true );
-		$k_signing = hash_hmac( 'sha256', 'aws4_request', $k_service, true );
-
-		// Calculate signature
-		$signature = hash_hmac( 'sha256', $string_to_sign, $k_signing );
-
-		// Build authorization header
-		$authorization  = $algorithm . ' ';
-		$authorization .= 'Credential=' . $access_key . '/' . $credential_scope . ',';
-		$authorization .= 'SignedHeaders=' . $signed_headers_str . ',';
-		$authorization .= 'Signature=' . $signature;
-
-		// Prepare HTTP headers for WordPress HTTP API
-		$http_headers = array(
-			'Content-Disposition'  => 'attachment; filename="' . sanitize_file_name( $downloaded_file_name ) . '"',
-			'Content-Language'     => get_bloginfo( 'language' ),
-			'Content-Type'         => $mime_type,
-			'Content-Length'       => $file_size,
-			'Host'                 => $host,
-			'x-amz-acl'            => 'private',
-			'x-amz-content-sha256' => $content_sha256,
-			'x-amz-date'           => $amz_date,
-			'Authorization'        => $authorization,
-		);
-
-		// Use WordPress HTTP API
-		wp_remote_request(
+		foreach ( $metadata as $name => $value ) {
+			if ( ! preg_match( '/^[a-z0-9-]+$/D', $name ) || ! is_string( $value ) || preg_match( '/[^\x20-\x7e]/', $value ) ) {
+				return new \WP_Error( 's3_invalid_metadata', 'S3 metadata must have safe ASCII names and values.' );
+			}
+			$canonical_headers[ 'x-amz-meta-' . $name ] = trim( $value );
+		}
+		ksort( $canonical_headers );
+		$header_lines = '';
+		foreach ( $canonical_headers as $name => $value ) {
+			$header_lines .= $name . ':' . preg_replace( '/ +/', ' ', trim( $value ) ) . "\n";
+		}
+		$signed_headers            = implode( ';', array_keys( $canonical_headers ) );
+		$canonical                 = $method . "\n" . $uri . "\n\n" . $header_lines . "\n" . $signed_headers . "\n" . $payload_hash;
+		$scope                     = $date_stamp . '/' . $region . '/s3/aws4_request';
+		$to_sign                   = "AWS4-HMAC-SHA256\n" . $amz_date . "\n" . $scope . "\n" . hash( 'sha256', $canonical );
+		$key                       = hash_hmac( 'sha256', $date_stamp, 'AWS4' . $secret_key, true );
+		$key                       = hash_hmac( 'sha256', $region, $key, true );
+		$key                       = hash_hmac( 'sha256', 's3', $key, true );
+		$key                       = hash_hmac( 'sha256', 'aws4_request', $key, true );
+		$headers                   = $canonical_headers;
+		$headers['Authorization']  = 'AWS4-HMAC-SHA256 Credential=' . $access_key . '/' . $scope
+			. ', SignedHeaders=' . $signed_headers . ', Signature=' . hash_hmac( 'sha256', $to_sign, $key );
+		$headers['Content-Length'] = strlen( $content );
+		if ( $filename ) {
+			$headers['Content-Disposition'] = 'attachment; filename="' . sanitize_file_name( $filename ) . '"';
+		}
+		$response = wp_remote_request(
 			$url,
 			array(
-				'method'    => 'PUT',
-				'headers'   => $http_headers,
-				'body'      => $file_content,
+				'method'    => $method,
+				'headers'   => $headers,
+				'body'      => $content,
 				'timeout'   => 60,
 				'sslverify' => true,
-				'blocking'  => false,
+				'blocking'  => true,
 			)
 		);
+		if ( is_wp_error( $response ) ) {
+			return $response;
+		}
+		$status = wp_remote_retrieve_response_code( $response );
+		return $status >= 200 && $status < 300 ? $response : new \WP_Error( 's3_request_failed', 'S3 request failed with status ' . $status );
 	}
 }
