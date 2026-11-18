@@ -517,7 +517,6 @@ class Download extends Record {
 				),
 				'metadata'       => array(
 					'id'                    => $this->get_id(),
-					'path'                  => S3_Syncer::s3_key( $this ),
 					'has_conditional_logic' => $this->has_conditional_logic(),
 				),
 			),

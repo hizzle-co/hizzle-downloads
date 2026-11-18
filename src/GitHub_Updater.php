@@ -131,10 +131,10 @@ class GitHub_Updater {
 		return true;
 	}
 
-    /**
+	/**
 	 * Processes a GitHub release webhook.
 	 *
-     * @param \WP_REST_Request $request
+	 * @param \WP_REST_Request $request
 	 */
 	public function process_release_webhook( $request ) {
 
@@ -156,7 +156,7 @@ class GitHub_Updater {
 		}
 
 		return rest_ensure_response( $result );
-    }
+	}
 
 	/**
 	 * Checks if the current user can update the download.
@@ -196,7 +196,7 @@ class GitHub_Updater {
 	/**
 	 * Processes a manual refresh REST request.
 	 *
-     * @param \WP_REST_Request $request
+	 * @param \WP_REST_Request $request
 	 */
 	public function manual_update( $request ) {
 
@@ -221,10 +221,9 @@ class GitHub_Updater {
 
 		// Process the release.
 		return rest_ensure_response( $this->process_release( $release, $repo ) );
+	}
 
-    }
-
-    /**
+	/**
 	 * Retrieves a GitHub release.
 	 *
 	 * @param string $url
@@ -235,12 +234,11 @@ class GitHub_Updater {
 		$error   = new \WP_Error( 'no_release', 'Unable to fetch release.', array( 'status' => 400 ) );
 
 		if ( is_wp_error( $release ) ) {
-            return $error;
-        }
+			return $error;
+		}
 
 		$release   = json_decode( wp_remote_retrieve_body( $release ) );
 		return empty( $release ) || empty( $release->tag_name ) ? $error : $release;
-
 	}
 
 	/**
@@ -271,9 +269,9 @@ class GitHub_Updater {
 		);
 
 		// Prepare the data to insert into the database.
-        $prepared = $this->prepare_github_download_data( $data );
+		$prepared = $this->prepare_github_download_data( $data );
 
-        // Fetch the download file.
+		// Fetch the download file.
 		$download_file = hizzle_get_download_by_git_url( 'https://github.com/' . $repo );
 
 		if ( ! is_wp_error( $download_file ) && $download_file->exists() ) {
@@ -293,7 +291,6 @@ class GitHub_Updater {
 				'file_url'   => isset( $prepared['file_url'] ) ? $prepared['file_url'] : '',
 			)
 		);
-
 	}
 
 	/**
@@ -353,7 +350,6 @@ class GitHub_Updater {
 		}
 
 		return $this->download_zipball( $release, $dir_url, $dir_path );
-
 	}
 
 	/**
@@ -398,22 +394,23 @@ class GitHub_Updater {
 		// Prepare args.
 		$extension = strtolower( $wp_filetype['ext'] );
 		$filename  = str_replace( '.' . $extension, '', strtolower( $asset->name ) );
+		// Storage names must not be guessable from public release information.
+		$storage_name = wp_generate_password( 32, false, false ) . '.' . $extension;
 
 		// Copy the file to the upload dir.
 		Installer::create_file(
-			$dir_path . '/' . strtolower( $asset->name ),
+			$dir_path . '/' . $storage_name,
 			$file_data
 		);
 
 		// Return the new file URL.
 		return array(
-			'file_path'        => $dir_path . '/' . strtolower( $asset->name ),
-			'file_url'         => $dir_url . '/' . strtolower( $asset->name ),
+			'file_path'        => $dir_path . '/' . $storage_name,
+			'file_url'         => $dir_url . '/' . $storage_name,
 			'root_folder_name' => $filename,
 			'is_zip'           => 'zip' === $extension,
 			'is_asset'         => true,
 		);
-
 	}
 
 	/**
@@ -431,7 +428,8 @@ class GitHub_Updater {
 		$filename     = $release['repo']['name'] . '-' . $release['tag_name'];
 		$alt_name     = $release['repo']['name'] . '-' . str_replace( 'v', '', $release['tag_name'] );
 		$repo_name    = $release['repo']['name'];
-		$zip_path     = $dir_path . '/' . $repo_name . '.zip';
+		$storage_name = wp_generate_password( 32, false, false ) . '.zip';
+		$zip_path     = $dir_path . '/' . $storage_name;
 
 		// Download the source code.
 		$file_data = $this->get( $download_url );
@@ -453,7 +451,6 @@ class GitHub_Updater {
 
 		// Rename the root folder to $release['repo']['name'].
 		if ( class_exists( 'ZipArchive' ) ) {
-
 			$zip = new \ZipArchive();
 			$res = $zip->open( $zip_path );
 			if ( true === $res ) {
@@ -484,11 +481,10 @@ class GitHub_Updater {
 		// Return the new file URL.
 		return array(
 			'file_path'        => $zip_path,
-			'file_url'         => $dir_url . '/' . $repo_name . '.zip',
+			'file_url'         => $dir_url . '/' . $storage_name,
 			'root_folder_name' => $filename,
 			'is_zip'           => true,
 		);
-
 	}
 
 	/**
@@ -509,7 +505,6 @@ class GitHub_Updater {
 		if ( class_exists( 'ZipArchive' ) ) {
 			$zip = new \ZipArchive();
 			if ( true === $zip->open( $release_details['file_path'] ) ) {
-
 				foreach ( $files as $file ) {
 					$content = $zip->getFromName( $file );
 					if ( ! empty( $content ) ) {
@@ -525,7 +520,7 @@ class GitHub_Updater {
 		return $release_details;
 	}
 
-    /**
+	/**
 	 * Sends a GET request to GitHub
 	 *
 	 * @param string $url
@@ -545,7 +540,7 @@ class GitHub_Updater {
 		return wp_remote_post( $url, $this->add_github_headers( $args ) );
 	}
 
-    /**
+	/**
 	 * Adds GitHub auth headers to a request.
 	 *
 	 * @param array $args The request

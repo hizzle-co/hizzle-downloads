@@ -2,7 +2,7 @@
 
 namespace Hizzle\Downloads;
 
-use \Hizzle\Downloads\Admin\Notices;
+use Hizzle\Downloads\Admin\Notices;
 
 /**
  * Installation related functionality.
@@ -15,7 +15,6 @@ defined( 'ABSPATH' ) || exit;
  * Installer Class.
  */
 class Installer {
-
 	/**
 	 * Hook in tabs.
 	 */
@@ -66,6 +65,7 @@ class Installer {
 
 		// Upgrade from current db version.
 		self::upgrade_from( (int) get_option( 'hizzle_downloads_db_version', null ) );
+		self::create_files();
 
 		// Verify that all tables were created.
 		self::verify_base_tables( true );
@@ -84,7 +84,6 @@ class Installer {
 
 		$missing_tables = self::verify_base_tables( true );
 		if ( 0 < count( $missing_tables ) ) {
-
 			Notices::add_custom_notice(
 				'verify_base_tables_error',
 				array(
@@ -92,9 +91,7 @@ class Installer {
 					'content' => __( 'An error occurred while creating required database tables.', 'hizzle-downloads' ),
 				)
 			);
-
 		} else {
-
 			Notices::add_custom_notice(
 				'verify_base_tables_ok',
 				array(
@@ -102,7 +99,6 @@ class Installer {
 					'content' => __( 'Successfuly created the required database tables.', 'hizzle-downloads' ),
 				)
 			);
-
 		}
 
 		wp_safe_redirect( remove_query_arg( array( 'hizzle_downloads_admin_action', 'hizzle_downloads_nonce' ) ) );
@@ -144,29 +140,28 @@ class Installer {
 	}
 
 	/**
-     * Upgrades the database.
-     *
-     * @param int $upgrade_from The current database version.
-     */
-    public static function upgrade_from( $upgrade_from = null ) {
+	 * Upgrades the database.
+	 *
+	 * @param int $upgrade_from The current database version.
+	 */
+	public static function upgrade_from( $upgrade_from = null ) {
 
 		if ( is_null( $upgrade_from ) ) {
 			$upgrade_from = (int) get_option( 'hizzle_downloads_db_version', null );
 		}
 
-        $method = "upgrade_from_$upgrade_from";
+		$method = "upgrade_from_$upgrade_from";
 
-        if ( is_callable( array( __CLASS__, $method ) ) ) {
-            self::$method();
-        }
-
-    }
+		if ( is_callable( array( __CLASS__, $method ) ) ) {
+			self::$method();
+		}
+	}
 
 	/**
-     * Do a fresh install.
-     *
-     */
-    protected static function upgrade_from_0() {
+	 * Do a fresh install.
+	 *
+	 */
+	protected static function upgrade_from_0() {
 		self::create_files();
 	}
 
@@ -190,7 +185,6 @@ class Installer {
 		require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 
 		dbDelta( self::get_schema() );
-
 	}
 
 	/**
@@ -262,6 +256,17 @@ class Installer {
 			),
 		);
 
+		// IIS does not read .htaccess. Keep redirect mode compatible with public files.
+		if ( 'redirect' !== hizzle_download_method() ) {
+			$files[] = array(
+				'file'    => 'web.config',
+				'content' => '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
+					. '<configuration><system.webServer><security><authorization>'
+					. '<clear /><add accessType="Deny" users="*" />'
+					. '</authorization></security></system.webServer></configuration>',
+			);
+		}
+
 		foreach ( $files as $file ) {
 			$file_path = trailingslashit( $base_dir ) . $file['file'];
 
@@ -269,7 +274,6 @@ class Installer {
 				self::create_file( $file_path, $file['content'] );
 			}
 		}
-
 	}
 
 	/**
@@ -281,7 +285,6 @@ class Installer {
 		$upload_dir = wp_get_upload_dir();
 
 		self::prepare_upload_dir( $upload_dir['basedir'] . '/hizzle_uploads' );
-
 	}
 
 	/**
@@ -299,5 +302,4 @@ class Installer {
 			hizzle_downloads()->logger->error( sprintf( 'Could not create %s file.', $file_path ), 'hizzle_downloads' );
 		}
 	}
-
 }
