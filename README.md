@@ -48,6 +48,57 @@ Verify deployment by requesting an existing file's uploads URL while logged out:
 it must be denied. Then verify the PHP download URL succeeds for an authorized
 request and rejects an unauthorized request (including password-protected files).
 
+## Client IP restrictions behind proxies
+
+IP access rules use the validated `REMOTE_ADDR` socket address by default. They ignore
+`X-Real-IP`, `X-Forwarded-For`, and `CF-Connecting-IP` from direct, untrusted clients.
+If your web server already restores the real client into `REMOTE_ADDR`, no plugin
+proxy configuration is needed.
+
+Download logging is separate: `hizzle_downloads_get_ip_address()` records the first
+valid address from `CF-Connecting-IP`, `X-Real-IP`, the first `X-Forwarded-For`
+entry, or `REMOTE_ADDR`, in that order. This preserves CDN visitor addresses in
+logs without requiring proxy configuration. Those forwarded values are
+observational and can be spoofed on an unprotected origin; they never authorize
+a download. Conditional IP rules use `hizzle_downloads_get_access_ip_address()`.
+
+Otherwise, configure only the actual proxy addresses/networks that connect to PHP.
+For example, in a site plugin or must-use plugin (replace these example addresses):
+
+```php
+add_filter( 'hizzle_downloads_trusted_proxies', function () {
+    return array( '10.0.0.10', '2001:db8::10' );
+} );
+```
+
+The list accepts IPv4/IPv6 addresses and CIDRs. Never trust every address or a
+network containing untrusted clients. For trusted peers the default header is
+`X-Forwarded-For`: the plugin walks it from right to left through trusted proxies,
+stopping at the first untrusted hop. Your proxies must append the actual peer
+address or replace the chain with verified data; they must not pass unverified
+client headers through unchanged.
+
+If your trusted ingress instead overwrites a single-IP header, select it explicitly:
+
+```php
+add_filter( 'hizzle_downloads_forwarded_ip_header', function () {
+    return 'HTTP_X_REAL_IP';
+} );
+```
+
+Supported selections are `HTTP_X_FORWARDED_FOR`, `HTTP_X_REAL_IP`, and
+`HTTP_CF_CONNECTING_IP`. A selected single-IP header must contain one valid IP.
+Missing/invalid required forwarding data yields an unknown address, which cannot
+match an empty IP rule. Unselected headers do not override the configured source.
+
+For Cloudflare deployments, trust only the verified proxy networks actually
+connecting to your origin and select `HTTP_CF_CONNECTING_IP`, or configure client
+IP restoration in the web server. This also applies to the account Worker's PHP
+fallback; sending a client-IP header alone does not make it trusted by this plugin.
+IP rules are not reliable if the proxy trust list or ingress header handling is
+misconfigured. Verify both a proxied request and a direct request with forged
+headers before relying on IP restrictions.
+
 ## S3 Sync Configuration
 
 The plugin supports automatic syncing of uploaded files to S3-compatible storage services like Amazon S3 and Cloudflare R2.

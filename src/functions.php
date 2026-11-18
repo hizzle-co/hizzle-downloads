@@ -224,7 +224,6 @@ function hizzle_get_available_downloads() {
 	return $grouped;
 }
 
-
 /**
  * Fetch download by download ID.
  *
@@ -325,21 +324,118 @@ function hizzle_delete_download_log( $download_log ) {
 }
 
 /**
- * Get current user IP Address.
+ * Gets an observational client IP for download logs, including CDN headers.
+ * Forwarded values are validated but not authenticated: never use this helper
+ * for access control. IP rules use hizzle_downloads_get_access_ip_address().
  *
  * @return string
  */
 function hizzle_downloads_get_ip_address() {
-	if ( isset( $_SERVER['HTTP_X_REAL_IP'] ) ) {
-		return sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_REAL_IP'] ) );
-	} elseif ( isset( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) {
-		// Proxy servers can send through this header like this: X-Forwarded-For: client1, proxy1, proxy2
-		// Make sure we always only send through the first IP in the list which should always be the client IP.
-		return (string) rest_is_ip_address( trim( current( preg_split( '/,/', sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_FORWARDED_FOR'] ) ) ) ) ) );
-	} elseif ( isset( $_SERVER['REMOTE_ADDR'] ) ) {
-		return sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) );
+	foreach ( array( 'HTTP_CF_CONNECTING_IP', 'HTTP_X_REAL_IP', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR' ) as $header ) {
+		if ( ! isset( $_SERVER[ $header ] ) || ! is_string( $_SERVER[ $header ] ) ) {
+			continue;
+		}
+		$value = $_SERVER[ $header ];
+		if ( 'HTTP_X_FORWARDED_FOR' === $header ) {
+			$value = explode( ',', $value, 2 );
+			$value = $value[0];
+		}
+		$value = trim( $value );
+		if ( rest_is_ip_address( $value ) ) {
+			return $value;
+		}
 	}
 	return '';
+}
+
+/**
+ * Checks whether an IP belongs to an explicitly trusted proxy address/network.
+ *
+ * @param string $ip Validated IP address.
+ * @param array  $proxies Trusted IP addresses or CIDR networks.
+ * @return bool
+ */
+function hizzle_downloads_is_trusted_proxy( $ip, $proxies ) {
+	$address = inet_pton( $ip );
+	if ( false === $address || ! is_array( $proxies ) ) {
+		return false;
+	}
+	foreach ( $proxies as $proxy ) {
+		if ( ! is_string( $proxy ) ) {
+			continue;
+		}
+		$parts   = explode( '/', trim( $proxy ), 2 );
+		$network = rest_is_ip_address( $parts[0] ) ? inet_pton( $parts[0] ) : false;
+		if ( false === $network || strlen( $network ) !== strlen( $address ) ) {
+			continue;
+		}
+		$bits = strlen( $network ) * 8;
+		if ( isset( $parts[1] ) ) {
+			if ( ! preg_match( '/^[0-9]{1,3}$/D', $parts[1] ) || (int) $parts[1] > $bits ) {
+				continue;
+			}
+			$bits = (int) $parts[1];
+		}
+		$bytes = (int) floor( $bits / 8 );
+		$tail  = $bits % 8;
+		if ( substr( $address, 0, $bytes ) !== substr( $network, 0, $bytes ) ) {
+			continue;
+		}
+		if ( 0 === $tail ) {
+			return true;
+		}
+		$mask = 255 << ( 8 - $tail );
+		if ( ( ord( $address[ $bytes ] ) & $mask ) === ( ord( $network[ $bytes ] ) & $mask ) ) {
+			return true;
+		}
+	}
+	return false;
+}
+
+/**
+ * Resolves the client IP without trusting caller-supplied forwarding headers.
+ * Forwarding is honored only behind configured proxies, up to the first
+ * untrusted hop. Earlier entries in an appended chain can be attacker-controlled.
+ *
+ * @return string
+ */
+function hizzle_downloads_get_access_ip_address() {
+	$peer = isset( $_SERVER['REMOTE_ADDR'] ) && is_string( $_SERVER['REMOTE_ADDR'] ) ? $_SERVER['REMOTE_ADDR'] : '';
+	if ( ! rest_is_ip_address( $peer ) ) {
+		return '';
+	}
+	$proxies = apply_filters( 'hizzle_downloads_trusted_proxies', array() );
+	if ( ! hizzle_downloads_is_trusted_proxy( $peer, $proxies ) ) {
+		return $peer;
+	}
+	$header = apply_filters( 'hizzle_downloads_forwarded_ip_header', 'HTTP_X_FORWARDED_FOR' );
+	if ( ! in_array( $header, array( 'HTTP_X_FORWARDED_FOR', 'HTTP_X_REAL_IP', 'HTTP_CF_CONNECTING_IP' ), true )
+		|| ! isset( $_SERVER[ $header ] ) || ! is_string( $_SERVER[ $header ] ) ) {
+		return '';
+	}
+	$value = $_SERVER[ $header ];
+	if ( 'HTTP_X_FORWARDED_FOR' !== $header ) {
+		$value = trim( $value );
+		return rest_is_ip_address( $value ) ? $value : '';
+	}
+	// Bound parsing work and reject oversized input rather than truncating a chain.
+	if ( strlen( $value ) > 8192 ) {
+		return '';
+	}
+	$chain = explode( ',', $value );
+	if ( count( $chain ) > 100 ) {
+		return '';
+	}
+	for ( $i = count( $chain ) - 1; $i >= 0; --$i ) {
+		if ( ! hizzle_downloads_is_trusted_proxy( $peer, $proxies ) ) {
+			return $peer;
+		}
+		$peer = trim( $chain[ $i ] );
+		if ( ! rest_is_ip_address( $peer ) ) {
+			return '';
+		}
+	}
+	return $peer;
 }
 
 /**
@@ -412,8 +508,10 @@ function hizzle_downloads_get_conditional_logic_rules() {
  * @return bool
  */
 function hizzle_download_conditional_logic_rule_met_ip_address( $is_valid, $rule ) {
-	return hizzle_downloads_get_ip_address() === trim( $rule['value'] );
+	$ip = hizzle_downloads_get_access_ip_address();
+	return '' !== $ip && isset( $rule['value'] ) && is_string( $rule['value'] ) && $ip === trim( $rule['value'] );
 }
+
 add_filter( 'hizzle_download_conditional_logic_rule_met_ip_address', 'hizzle_download_conditional_logic_rule_met_ip_address', 10, 2 );
 
 /**
@@ -426,6 +524,7 @@ add_filter( 'hizzle_download_conditional_logic_rule_met_ip_address', 'hizzle_dow
 function hizzle_download_conditional_logic_rule_met_user_id( $is_valid, $rule ) {
 	return get_current_user_id() === intval( $rule['value'] );
 }
+
 add_filter( 'hizzle_download_conditional_logic_rule_met_user_id', 'hizzle_download_conditional_logic_rule_met_user_id', 10, 2 );
 
 /**
@@ -441,6 +540,7 @@ function hizzle_download_conditional_logic_rule_met_user_role( $is_valid, $rule 
 
 	return trim( $rule['value'] ) === $user_role;
 }
+
 add_filter( 'hizzle_download_conditional_logic_rule_met_user_role', 'hizzle_download_conditional_logic_rule_met_user_role', 10, 2 );
 
 /**
@@ -456,6 +556,7 @@ function hizzle_download_conditional_logic_rule_met_noptin( $is_valid, $rule ) {
 
 	return 'subscribed' === $rule['value'] ? $is_subscribed : ! $is_subscribed;
 }
+
 add_filter( 'hizzle_download_conditional_logic_rule_met_noptin', 'hizzle_download_conditional_logic_rule_met_noptin', 10, 2 );
 
 /**
