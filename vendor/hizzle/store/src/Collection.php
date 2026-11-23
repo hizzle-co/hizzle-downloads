@@ -62,6 +62,15 @@ class Collection {
 	public $capabillity = 'manage_options';
 
 	/**
+	 * Optional capabilities for REST operations: read, create, edit, delete,
+	 * delete_multiple, bulk_edit, batch, and remote_action. Unspecified operations keep
+	 * the collection capability or the standard WordPress post capabilities.
+	 *
+	 * @var array
+	 */
+	public $capabilities = array();
+
+	/**
 	 * In case this collection is connected to the posts table.
 	 *
 	 * @var string
@@ -570,6 +579,11 @@ class Collection {
 		// Add each prop.
 		foreach ( $this->props as $prop ) {
 			$schema['properties'][ $prop->name ] = $prop->get_rest_schema();
+
+			// Hidden fields are supplied internally; non-null storage does not require client input.
+			if ( in_array( $prop->name, $this->hidden, true ) && ! empty( $schema['properties'][ $prop->name ] ) ) {
+				$schema['properties'][ $prop->name ]['required'] = false;
+			}
 
 			if ( $prop->is_meta_key && $prop->is_meta_key_multiple ) {
 				$schema['properties'][ $prop->name . '::add' ] = array(
