@@ -24,9 +24,12 @@ namespace {
 	/** Uses the production permission evaluator with an IP-only record fixture. */
 	class IP_Test_Download extends \Hizzle\Downloads\Download {
 		public $action = 'allow';
+		public $conditional = true;
+		public $legacy_password = '';
+		public function get_meta( $key, $default = '' ) { return '_password' === $key ? $this->legacy_password : $default; }
 		public function is_downloadable() { return true; }
 		public function get_conditional_logic() {
-			return array( 'enabled' => true, 'action' => $this->action, 'type' => 'all', 'rules' => array(
+			return array( 'enabled' => $this->conditional, 'action' => $this->action, 'type' => 'all', 'rules' => array(
 				array( 'type' => 'ip_address', 'condition' => 'is', 'value' => '203.0.113.7' ),
 			) );
 		}
@@ -95,5 +98,13 @@ namespace {
 	) as $case ) {
 		check( $case[2] === hizzle_downloads_is_trusted_proxy( $case[0], $case[1] ), 'Exact/CIDR proxy matching respects address families and mask boundaries' );
 	}
+	$download->conditional = false;
+	$download->legacy_password = 'old-secret';
+	check( ! $download->current_user_can_download(), 'Removing password support does not expose legacy password-only files' );
+	$_POST['hizzle_downloads_file_password'] = 'old-secret';
+	check( ! $download->current_user_can_download(), 'Submitting the former password cannot grant access' );
+	$download->legacy_password = '';
+	check( $download->current_user_can_download(), 'Reviewed files follow their saved conditional rules' );
+	check( ! method_exists( $download, 'set_password' ) && ! method_exists( $download, 'get_password' ), 'Password APIs are removed' );
 	echo "Client IP and permission regressions passed.\n";
 }

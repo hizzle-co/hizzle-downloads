@@ -26,6 +26,10 @@
         <?php endif; ?>
     </h1>
 
+    <?php if ( $download->requires_access_review() ) : ?>
+        <div class="notice notice-warning inline"><p>Password protection has been removed. This file is blocked until you review its Conditional Logic and save it. Leaving Conditional Logic disabled makes the file public.</p></div>
+    <?php endif; ?>
+
     <?php if ( $download->exists() ) : ?>
         <p class="description">
             <?php
@@ -84,15 +88,6 @@
             <div class="hizzle-downloads-form-field-input">
                 <input type="text" class="regular-text" name="hizzle_downloads[category]" id="hizzle-file-category" value="<?php echo esc_attr( $download->get_category( 'edit' ) ); ?>" placeholder="<?php esc_attr_e( 'For example, General', 'hizzle-downloads' ); ?>" />
                 <p class="description"><?php esc_html_e( 'Optional. If specified, this download will be grouped together with other downloads in the same category.', 'hizzle-downloads' ); ?></p>
-            </div>
-        </div>
-
-        <!-- File password -->
-        <div class="hizzle-downloads-form-field">
-            <label for="hizzle-file-password" class="hizzle-downloads-form-field-label"><?php esc_html_e( 'File Password', 'hizzle-downloads' ); ?></label>
-            <div class="hizzle-downloads-form-field-input">
-                <input type="password" class="regular-text" name="hizzle_downloads[password]" id="hizzle-file-password" value="<?php echo esc_attr( $download->get_password( 'edit' ) ); ?>" placeholder="<?php esc_html_e( 'No Password', 'hizzle-downloads' ); ?>" autocomplete="new-password" />
-                <p class="description"><?php esc_html_e( 'If provided, users will be required to enter the password before being allowed to download this file.', 'hizzle-downloads' ); ?></p>
             </div>
         </div>
 

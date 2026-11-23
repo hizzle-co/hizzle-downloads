@@ -131,10 +131,6 @@ msgstr ""
 msgid "Download deleted."
 msgstr ""
 
-#: src/html-password-form.php:87
-msgid "Download File"
-msgstr ""
-
 #: src/REST_Versions.php:101
 msgid "Download file not found."
 msgstr ""
@@ -163,10 +159,6 @@ msgstr ""
 msgid "Edit Downloadable File"
 msgstr ""
 
-#: src/html-password-form.php:84
-msgid "Enter the file password"
-msgstr ""
-
 #: src/Admin/Downloads.php:147
 msgid "Error saving the download."
 msgstr ""
@@ -189,10 +181,6 @@ msgstr ""
 
 #: src/Download_Handler.php:199
 msgid "File not found"
-msgstr ""
-
-#: src/Admin/views/html-edit-download.php:92
-msgid "File Password"
 msgstr ""
 
 #: src/Admin/Downloads_Table.php:109 src/Admin/views/html-edit-download.php:56
@@ -258,12 +246,6 @@ msgstr ""
 msgid "ID: %d"
 msgstr ""
 
-#: src/Admin/views/html-edit-download.php:95
-msgid ""
-"If provided, users will be required to enter the password before being "
-"allowed to download this file."
-msgstr ""
-
 #: src/functions.php:390
 msgid "IP Address"
 msgstr ""
@@ -286,10 +268,6 @@ msgstr ""
 
 #: src/html-display-downloads.php:74
 msgid "No downloads available yet."
-msgstr ""
-
-#: src/Admin/views/html-edit-download.php:94
-msgid "No Password"
 msgstr ""
 
 #: src/Admin/views/html-edit-download.php:134
@@ -324,10 +302,6 @@ msgstr ""
 
 #: src/Admin/views/html-edit-download.php:159
 msgid "or"
-msgstr ""
-
-#: src/html-password-form.php:82
-msgid "Password"
 msgstr ""
 
 #: src/Admin/views/html-edit-download.php:124
@@ -413,10 +387,6 @@ msgstr ""
 
 #: src/data/db-schema.php:59
 msgid "The number of times the file has been downloaded."
-msgstr ""
-
-#: src/Download_Handler.php:104
-msgid "The password you entered is incorrect. Please try again."
 msgstr ""
 
 #: src/data/db-schema.php:67
@@ -515,4 +485,8 @@ msgstr ""
 
 #: src/Admin/Settings.php:53
 msgid "Your changes were saved successfully."
+msgstr ""
+
+#: src/Admin/views/html-edit-download.php:29
+msgid "Password protection has been removed. This file is blocked until you review its Conditional Logic and save it. Leaving Conditional Logic disabled makes the file public."
 msgstr ""

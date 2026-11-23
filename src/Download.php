@@ -251,25 +251,6 @@ class Download extends Record {
 	}
 
 	/**
-	 * Get the password.
-	 *
-	 * @return string
-	 */
-	public function get_password() {
-		return $this->get_meta( '_password', '' );
-	}
-
-	/**
-	 * Set the password.
-	 *
-	 * @param string $password New password.
-	 */
-	public function set_password( $password ) {
-		$password = empty( $password ) ? null : $password;
-		$this->update_meta( '_password', $password );
-	}
-
-	/**
 	 * Get the version.
 	 *
 	 * @return string
@@ -374,12 +355,12 @@ class Download extends Record {
 	}
 
 	/**
-	 * Checks if the download file is password protected.
+	 * Blocks legacy password files until their access rules are reviewed.
 	 *
 	 * @return bool
 	 */
-	public function is_password_protected() {
-		$password = $this->get_password();
+	public function requires_access_review() {
+		$password = $this->get_meta( '_password', '' );
 		return ! empty( $password );
 	}
 
@@ -391,7 +372,7 @@ class Download extends Record {
 	public function current_user_can_download() {
 
 		// Abort if the file is not downloadable.
-		if ( ! $this->is_downloadable() ) {
+		if ( ! $this->is_downloadable() || $this->requires_access_review() ) {
 			return false;
 		}
 

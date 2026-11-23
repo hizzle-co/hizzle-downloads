@@ -115,7 +115,6 @@ class Downloads {
 				'git_url'    => isset( $props['git_url'] ) ? $props['git_url'] : null,
 				'category'   => isset( $props['category'] ) ? $props['category'] : null,
 				'menu_order' => isset( $props['menu_order'] ) ? $props['menu_order'] : null,
-				'password'   => isset( $props['password'] ) ? $props['password'] : null,
 			),
 			true
 		);
@@ -128,6 +127,8 @@ class Downloads {
 
 		// Conditional logic.
 		$download->update_meta( '_conditional_logic', isset( $props['conditional_logic'] ) ? $props['conditional_logic'] : array() );
+		// Saving replaces legacy password access with the reviewed access rules.
+		$download->update_meta( '_password', null );
 
 		// Save the download file.
 		$result = $download->save();

@@ -3,7 +3,7 @@ Create free or paid downloadable files
 
 ## Protecting local downloads
 
-Files remain in the WordPress uploads directory. Download permissions and passwords
+Files remain in the WordPress uploads directory. Download permissions
 are checked by the PHP download handler, so the web server must block direct HTTP
 access to `hizzle_uploads` and all its subdirectories. Random filenames reduce
 guessability; they do not replace these server rules.
@@ -46,7 +46,17 @@ no longer referenced by downloads, attachments, or integrations.
 
 Verify deployment by requesting an existing file's uploads URL while logged out:
 it must be denied. Then verify the PHP download URL succeeds for an authorized
-request and rejects an unauthorized request (including password-protected files).
+request and rejects an unauthorized request.
+
+## Access rules
+
+Use Conditional Logic to restrict downloads by user, role or IP address. The
+Hizzle Licenses integration also provides license-based rules. Password protection
+has been removed, including its form and password-setting API.
+
+If an existing file has a saved password, it stays blocked until an administrator
+reviews its Conditional Logic and saves it. Saving removes the old password.
+Leaving Conditional Logic disabled makes the reviewed file public.
 
 ## Client IP restrictions behind proxies
 
