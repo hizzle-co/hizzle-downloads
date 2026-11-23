@@ -4,8 +4,8 @@ Tags: files, downloads, digital downloads, download manager, restrict downloads
 Requires at least: 4.9
 Tested up to: 7.1
 Requires PHP: 5.6
-Version: 1.3.1
-Stable tag: 1.3.1
+Version: 1.4.0
+Stable tag: 1.4.0
 License: GPLv3
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 Donate link: https://noptin.com/pricing/?utm_source=wp-repo&utm_medium=donate&utm_campaign=readme
@@ -130,6 +130,9 @@ There are a lot of ways to contribute to this plugin:-
 Yeah. The downloads list will take your theme's default styling.
 
 == Changelog ==
+
+= 1.4.0 =
+- Update composer packages.
 
 = 1.3.1 =
 - Test on WordPress 7.1
